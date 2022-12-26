@@ -6,7 +6,7 @@
 
 using std::ostream;
 using std::cout;
-namespace krn = std::chrono;
+namespace crn = std::chrono;
 // using namespace std::chrono_literals;
 
 // using std::chrono;
@@ -158,9 +158,15 @@ int main() {
     // std::cout << std::chrono::utc_clock::now() << "\n";
     // cout << duration << "\n";
 
-    // Thanks https://akrzemi1.wordpress.com/2022/04/11/using-stdchrono/
-    // auto now = krn::utc_clock::now();
-    // std::cout << std::format("Hello {}!\n", "world");
-    // cout << std::format("{:%Y-%m-%d %H:%M}\n", now);
+
+    // Thanks https://en.cppreference.com/w/cpp/chrono/year_month_day
+    const crn::time_point now{crn::system_clock::now()};
+ 
+    const crn::year_month_day ymd{crn::floor<crn::days>(now)};
+ 
+    std::cout << "Current Year: " << static_cast<int>(ymd.year())
+              << ", Month: " << static_cast<unsigned>(ymd.month())
+              << ", Day: " << static_cast<unsigned>(ymd.day()) << '\n';
+
     cout << "Ahh\n";
 };
