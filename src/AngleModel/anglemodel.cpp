@@ -1,7 +1,15 @@
 #include <iostream>
+// #include <iomanip>
+#include <chrono>
+// #include <format>
 // export module AngleModel;
 
 using std::ostream;
+using std::cout;
+namespace krn = std::chrono;
+// using namespace std::chrono_literals;
+
+// using std::chrono;
 
 /**
  * @brief Represents an angle, by default in degrees.
@@ -15,15 +23,15 @@ class Angle {
             : value(v)
         {}
 
-        Angle operator+(Angle other) {
+        auto operator+(Angle other) -> Angle {
             return Angle(value + other.value);
         };
         
-        Angle operator-(Angle other) {
+        auto operator-(Angle other) -> Angle {
             return Angle(value - other.value);
         };
 
-        friend ostream& operator<<(ostream& os, Angle angle) {
+        auto friend operator<<(ostream& os, Angle angle) -> ostream& {
             os << angle.value;
             return os;
         };
@@ -50,15 +58,15 @@ class AngularCoordinates {
             angles(a, b)
         {}
 
-        AngularCoordinates operator+(AngularCoordinates other) {
+        auto operator+(AngularCoordinates other) -> AngularCoordinates {
             return AngularCoordinates { angles[0] + other.angles[0], angles[1] + other.angles[1]};
         };
 
-        AngularCoordinates operator-(AngularCoordinates other) {
+        auto operator-(AngularCoordinates other) -> AngularCoordinates {
             return AngularCoordinates { angles[0] - other.angles[0], angles[1] - other.angles[1]};
         };
 
-        friend ostream& operator<<(ostream& os, AngularCoordinates coordinates) {
+        auto friend operator<<(ostream& os, AngularCoordinates coordinates) -> ostream& {
             os << "(" << coordinates.angles[0] << ", " << coordinates.angles[1] << ")";
             return os;
         };
@@ -126,7 +134,7 @@ class SunPosition {
 };
 
 int main() {
-    std::cout << "Test\n";
+    // std::cout << "Test\n";
     // Angle angle = Angle(90);
     // Angle second = Angle(60);
     // Angle sum = angle + second;
@@ -134,5 +142,25 @@ int main() {
 
     auto first = SunAngles(20., 20.);
     auto second = SunAngles(50., 40.);
-    std::cout << first - second;
+    std::cout << first - second << "\n";
+
+    cout << "Yes\n";
+    auto duration = std::chrono::system_clock::now();
+    // std::time_t now = std::chrono::system_clock::to_time_t(clock);
+
+    // std::chrono::duration<double> time = clock;
+    // std::cout << clock << std::endl;
+    // std::cout << now << std::endl;
+    // cout << time << "UTC\n";
+
+    // std::cout << std::chrono::minutes(1h).count() << "minutes\n";
+    // std::cout << std::chrono::microseconds(1s).count() << " microseconds\n";
+    // std::cout << std::chrono::utc_clock::now() << "\n";
+    // cout << duration << "\n";
+
+    // Thanks https://akrzemi1.wordpress.com/2022/04/11/using-stdchrono/
+    // auto now = krn::utc_clock::now();
+    // std::cout << std::format("Hello {}!\n", "world");
+    // cout << std::format("{:%Y-%m-%d %H:%M}\n", now);
+    cout << "Ahh\n";
 };
