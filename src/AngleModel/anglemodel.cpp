@@ -1,12 +1,10 @@
+export module AngleModel;
 #include <iostream>
-// #include <iomanip>
-#include <chrono>
-// #include <format>
-// export module AngleModel;
 
 using std::ostream;
 using std::cout;
 namespace crn = std::chrono;
+// namespace std::chrono_literals;
 // using namespace std::chrono_literals;
 
 // using std::chrono;
@@ -133,6 +131,14 @@ class SunPosition {
         SunAngles windowOffset;
 };
 
+/**
+ * @brief Custom class to 
+ * 
+ */
+class TimeHelper {
+
+}
+
 int main() {
     // std::cout << "Test\n";
     // Angle angle = Angle(90);
@@ -143,30 +149,6 @@ int main() {
     auto first = SunAngles(20., 20.);
     auto second = SunAngles(50., 40.);
     std::cout << first - second << "\n";
-
-    cout << "Yes\n";
-    auto duration = std::chrono::system_clock::now();
-    // std::time_t now = std::chrono::system_clock::to_time_t(clock);
-
-    // std::chrono::duration<double> time = clock;
-    // std::cout << clock << std::endl;
-    // std::cout << now << std::endl;
-    // cout << time << "UTC\n";
-
-    // std::cout << std::chrono::minutes(1h).count() << "minutes\n";
-    // std::cout << std::chrono::microseconds(1s).count() << " microseconds\n";
-    // std::cout << std::chrono::utc_clock::now() << "\n";
-    // cout << duration << "\n";
-
-
-    // Thanks https://en.cppreference.com/w/cpp/chrono/year_month_day
-    const crn::time_point now{crn::system_clock::now()};
- 
-    const crn::year_month_day ymd{crn::floor<crn::days>(now)};
- 
-    std::cout << "Current Year: " << static_cast<int>(ymd.year())
-              << ", Month: " << static_cast<unsigned>(ymd.month())
-              << ", Day: " << static_cast<unsigned>(ymd.day()) << '\n';
 
     cout << "Ahh\n";
 };
