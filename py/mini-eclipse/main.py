@@ -57,13 +57,17 @@ class SolarModel:
         self.location = loc
         self.offset = os
 
-    def calc_raw_angles(t):
+    def calc_raw_angles(self, t: datetime) -> SolarAngles:
         """
-        Calculate the solar angles for a given time in global frame
+        Calculate the solar angles for a given UTC time in global frame
         """
-        raise NotImplementedError()
+        JULIAN_CONSTANT = 2415018.5
+        julian_day = JULIAN_CONSTANT + int(t.date().day)
+        print(julian_day)
+        
+        return SolarAngles(0, 0)
 
-    def calc_adjusted_angles(t):
+    def calc_adjusted_angles(self, t: datetime):
         """
         Calculate the solar angles for a given time in local frame (adjusted by offset)
         """
@@ -73,10 +77,16 @@ if __name__ == "__main__":
     print("Yes")
     a = Angle(40)
     c = SolarAngles(20, 20)
-    print(c)
+    # print(c)
     dt = datetime.now(timezone.utc)
-    print(dt.date())
-    print(dt.time())
+    # print(dt.date())
+    # print(dt.time())
 
+    test_time = datetime(2010, 6, 21, 0, 6)
+    print(test_time)
 
-    # print()
+    home = Location(42.360015, -71.087902)
+    offset = SolarAngles(155.75, 0)
+    model = SolarModel(home, offset)
+
+    print(model.calc_raw_angles(test_time))
