@@ -1,7 +1,4 @@
 import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-from sun_model import SolarModel, SolarAngles
 
 """
 Module for doing all the window calculations.
@@ -25,20 +22,20 @@ class Window:
         Using the window angles and the viewer position, find
         the (x, y) pair that would block the light.
 
+        See documentation for more details, but we're using a left-handed XYZ centered
+        around the top left corner, where X points right, Y points down, and Z points in.
+
         angles is an iterable of length 2 with sun azimuth and altitude relative
         to the window, where:
-            - azimuth is 0 when pointing to the positive-x and
-              180 when pointing to negative-x; moves like negative pitch
-            - altitude is 0 when pointing to positive-z and 180
-              when pointing to negative-z; moves like positive roll
+            - azimuth is
+                    -90 when pointing to the negative-x (left),
+                    90 when pointing to positive-x (right)
+            - altitude is
+                    0 when pointing to negative-z (outside)
+                    90 when pointing negative-y (up)
 
         position is an iterable of length 3 with x, y, z offsets from the window's
-        origin, typically top left corner, to the position of the viewer.
-
-        Note that although angles refers to the position of the sun and position
-        refers to the position of the viewer, both share the same coordinate frame.
-        
-        z should be negative if inside, positive if outside.
+        origin to the position of the viewer.
 
         Think of this as projecting a point in the room onto a point in the plane of
         the window.
@@ -57,13 +54,12 @@ class Window:
         if altitude < 0:
             raise ValueError("altitude is negative; maybe the sun is beneath the horizon")
 
-        # TODO change to follow new convention; also TODO change docstring.
         # Note the negative because the viewer is inside and we're moving the viewer_z to 0.
         position_x = viewer_x + viewer_z * np.tan(azimuth)
 
         # Note the double negative left in for clarity. Offset is subtracted here because
         # of how the triangle is set up.
-        position_y = viewer_x + viewer_z * np.tan(altitude)
+        position_y = viewer_y + viewer_z * np.tan(altitude)
         
         return (position_x, position_y)
 
@@ -87,34 +83,15 @@ class Window:
 
         return (l_1, l_2)
 
-    def plot_points(self, xs, ys):
-        """
-        Given an iterable of (x, y) points, plot them.
-        """
-        fig, ax = plt.subplots()
-        w, h = self.width, self.height
-
-        # Construct the window framing
-        corners = [(0, 0), (w, 0), (w, h), (0, h)]
-        window_edges = [(corners[i], corners[(i+1)%4]) for i in range(4)]
-        lines = mpl.collections.LineCollection(window_edges, color="black")
-        ax.add_collection(lines)
-
-        # ax.scatter([1, 2, 3], [4, 5, 6])
-        ax.scatter(xs, ys)
-        ax.invert_yaxis()
-        ax.axis("equal")
-
 def main():
     # Units typically in inches
-    width, height = 45.5, 57,5
+    width, height = 45.5, 57.5
     window = Window(width, height)
 
-    sun_model = 
     # Approximate position of my eyes when I'm at my desk
     position = (15, height - 9, 35)
 
-    window.plot_points([1, 2, 3], [4, 5, 6])
+    # window.plot_points([1, 2, 3], [4, 5, 6])
     # ax.plot([1, 2, 3, 4], [1, 4, 2, 3]);  # Plot some data on the axes.
 
 

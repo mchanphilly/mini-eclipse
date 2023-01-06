@@ -104,6 +104,9 @@ class SolarModel:
         out = [sunrise + i * step_amount for i in range(steps)]
         return out
 
+    def split_today(self, steps: int = 2):
+        return self.split_day_times(datetime.utcnow(), steps)
+
     @staticmethod
     def readable_times(times: list, verbose: bool = False):
         """
