@@ -77,13 +77,46 @@ class SolarModel:
         raw_angles = self.calc_raw_angles(t, unit)
         return raw_angles - self.offset
 
-    def calc_ends(self, t: datetime) -> tuple[datetime, datetime]:
+    def calc_ends(self, day: datetime) -> tuple[datetime, datetime]:
         """
         Returns sunrise and sunset, AKA when the mini-eclipse should be active.
+
+        day should be any datetime on the day we're looking at.
         """
         lat, lon = self.location.get_lat_lon()
-        times = get_times(t, lon, lat)
+        times = get_times(day, lon, lat)
         return times["sunrise"], times["sunset_start"]
+
+    def split_day_times(self, day: datetime, steps: int = 2):
+        """
+        Returns a list of datetime of length 'steps' to split the day.
+        
+        steps must always be at least 2, and the output always starts with
+        sunrise and ends with sunset.
+        """
+        if steps < 2:
+            raise ValueError("Must at least be 2 steps")
+
+        sunrise, sunset = self.calc_ends(day)
+        total = sunset - sunrise
+
+        step_amount = total / (steps - 1)
+        out = [sunrise + i * step_amount for i in range(steps)]
+        return out
+
+    @staticmethod
+    def readable_times(times: list, verbose: bool = False):
+        """
+        Turns a list of datetime into a list of readable strings. Offers
+        a more compact version if the times are on the same date.
+        """
+        def all_same(items: list, f: function):
+            return all([f(item) == f(items[0]) for item in items])
+
+        same_date = all_same(times, lambda dt: dt.date())
+        format_string = ("%b %d" if not same_date or verbose else "") + "%H:%M"
+
+        return [time.strftime(format_string) for time in times]
 
 def main():
     # test_time = datetime(2022, 12, 25, 0, 6)
@@ -101,8 +134,9 @@ def main():
     def print_test(t: datetime, s: str):
         position = model.calc_adjusted_angles(t)
         raw_position = model.calc_raw_angles(t)
-        end_times = [end.strftime("%b %d %H:%M:%S") for end in model.calc_ends(t)]
-        print(s, position)
+        splits = model.split_day_times(t, 3)
+        # print(s, position)
+        print(SolarModel.readable_times(splits))
         # print(end_times)
         # print(s, raw_position)
 
