@@ -18,7 +18,7 @@ class VirtualEclipse:
         Given an iterable of (x, y) points, plot them.
         """
         fig, ax = plt.subplots()
-        w, h = self.width, self.height
+        w, h = self.window.width, self.window.height
 
         # Construct the window framing
         corners = [(0, 0), (w, 0), (w, h), (0, h)]
@@ -31,14 +31,18 @@ class VirtualEclipse:
         ax.invert_yaxis()
         ax.axis("equal")
 
-    def plot_today(self, steps: int = 2):
+    def plot_today(self, position, steps: int = 2):
         """
         Plots today's points on the window, where the number of points is steps.
         """
         times = self.solar.split_today_times(steps)
         angles = self.solar.times_to_angles(times)
-        print(angles)
-        # print(times)
+        # print(angles)
+        xys = [self.window.find_position(angle, position) for angle in angles]
+        # print(xys)
+        xs, ys = list(zip(*xys))
+        # print(xs)
+        self.plot_points(xs, ys)
 
 
 
@@ -52,10 +56,11 @@ def main():
 
     eclipse = VirtualEclipse(window, solar)
 
+    known_noon_angles = SolarAngles(-0.367949956722299, 21.17302940256547)
     # Approximate position of my eyes when I'm at my desk
     position = (15, height - 9, 35)
 
-    print(eclipse.plot_today(5))
+    print(eclipse.plot_today(position, 40))
 
 if __name__ == "__main__":
     main()

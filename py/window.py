@@ -1,4 +1,5 @@
 import numpy as np
+from sun_model import SolarAngles
 
 """
 Module for doing all the window calculations.
@@ -17,7 +18,7 @@ class Window:
         self.width = w
         self.height = h
 
-    def find_position(self, angles, position):
+    def find_position(self, angles: SolarAngles, position, override: bool = False):
         """
         Using the window angles and the viewer position, find
         the (x, y) pair that would block the light.
@@ -39,29 +40,35 @@ class Window:
 
         Think of this as projecting a point in the room onto a point in the plane of
         the window.
+
+        If the point is out of the window, return (0,0) unless override
         """
-        if len(angles) != 2:
-            raise ValueError("Angles needs an azimuth and altitude")
         if len(position) != 3:
             raise ValueError("Position needs x, y, z")
 
-        azimuth, altitude = angles
+        # A little messy, but we convert here to radians to work with np
+        azimuth, altitude = angles.to_radian().get_angles()
         viewer_x, viewer_y, viewer_z = position
 
-        if viewer_z > 0:
-            raise ValueError("z should be negative if inside the room")
+        if viewer_z < 0:
+            raise ValueError("z is negative but should be positive if inside the room")
 
-        if altitude < 0:
-            raise ValueError("altitude is negative; maybe the sun is beneath the horizon")
+        lower_altitude = np.deg2rad(-15)
+        if altitude < lower_altitude:
+            raise ValueError(f"altitude is too low; below {lower_altitude}")
 
         # Note the negative because the viewer is inside and we're moving the viewer_z to 0.
         position_x = viewer_x + viewer_z * np.tan(azimuth)
 
         # Note the double negative left in for clarity. Offset is subtracted here because
         # of how the triangle is set up.
-        position_y = viewer_y + viewer_z * np.tan(altitude)
+        position_y = viewer_y - viewer_z * np.tan(altitude)
         
-        return (position_x, position_y)
+        # return (position_x, position_y)
+        if override or ((0 < position_x < self.width) and (0 < position_y < self.height)):
+            return (position_x, position_y)
+        else:
+            return (0, 0)
 
     def cartesian_to_lengths(self, x, y):
         """
@@ -83,13 +90,21 @@ class Window:
 
         return (l_1, l_2)
 
+def test():
+    w, h = 20, 20
+    p = (10, 10, 10)
+    window = Window(w, h)
+    print(window.find_position(SolarAngles(0, 70), p))
+
 def main():
     # Units typically in inches
-    width, height = 45.5, 57.5
-    window = Window(width, height)
+    real_width, real_height = 45.5, 57.5
+    real_window = Window(real_width, real_height)
 
     # Approximate position of my eyes when I'm at my desk
-    position = (15, height - 9, 35)
+    real_position = (15, real_height - 9, 35)
+
+    test()
 
     # window.plot_points([1, 2, 3], [4, 5, 6])
     # ax.plot([1, 2, 3, 4], [1, 4, 2, 3]);  # Plot some data on the axes.

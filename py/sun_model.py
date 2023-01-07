@@ -34,6 +34,23 @@ class SolarAngles():
         angles = (a * 180 / pi for a in self.angles)
         return SolarAngles(*angles, unit=AngleUnit.DEGREE)
 
+    def to_radian(self) -> SolarAngles:
+        """
+        Assumes it was currently in degree and returns a new SolarAngles 
+        object in degrees
+        """
+        if self.unit != AngleUnit.DEGREE:
+            raise TypeError("These angles aren't in degrees.")
+
+        angles = (a * pi / 180 for a in self.angles)
+        return SolarAngles(*angles, unit=AngleUnit.RADIAN)
+
+    def get_angles(self):
+        """
+        Returns a pair (azimuth, altitude)
+        """
+        return self.angles
+
     def __sub__(self, other: SolarAngles) -> SolarAngles:
         if (self.unit != other.unit):
             raise TypeError(f"Different AngleUnit: this is in {self.unit} but the other is {other.unit}")
@@ -89,7 +106,7 @@ class SolarModel:
         """
         lat, lon = self.location.get_lat_lon()
         times = get_times(day, lon, lat)
-        out = times["sunrise"], times["sunset_start"]
+        out = times["sunrise_end"], times["sunset_start"]
 
         # These are returned in UTC but they don't have UTC info yet,
         # so we add it in
@@ -156,16 +173,18 @@ def main():
     def print_test(t: datetime, s: str):
         position = model.calc_adjusted_angles(t)
         raw_position = model.calc_raw_angles(t)
-        splits = model.split_day_times(t, 3)
+        times = model.split_day_times(t, 5)
+        angles = model.times_to_angles(times)
         # print(s, position)
-        print(SolarModel.readable_times(splits))
+        print(angles)
+        # print(SolarModel.readable_times(splits))
         # print([model.calc_raw_angles(t) for t in splits])
         # print(model.calc_adjusted_angles(sunset_time))
         # print(end_times)
         # print(sunset_time - splits[-1])
         # print(s, raw_position)
 
-    # print_test(zero_azimuth_time, "zero azimuth")
+    print_test(zero_azimuth_time, "zero azimuth")
     # print_test(sunset_time, "sunset")
 
     # print(testing(utc_now))
