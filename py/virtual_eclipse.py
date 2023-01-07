@@ -31,6 +31,17 @@ class VirtualEclipse:
         ax.invert_yaxis()
         ax.axis("equal")
 
+    def plot_today(self, steps: int = 2):
+        """
+        Plots today's points on the window, where the number of points is steps.
+        """
+        times = self.solar.split_today_times(steps)
+        angles = self.solar.times_to_angles(times)
+        print(angles)
+        # print(times)
+
+
+
 def main():
     width, height = 45.5, 57.5
     window = Window(width, height)
@@ -43,6 +54,8 @@ def main():
 
     # Approximate position of my eyes when I'm at my desk
     position = (15, height - 9, 35)
+
+    print(eclipse.plot_today(5))
 
 if __name__ == "__main__":
     main()

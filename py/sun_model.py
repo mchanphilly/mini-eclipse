@@ -25,26 +25,30 @@ class SolarAngles():
 
     def to_degree(self) -> SolarAngles:
         """
-        Assumes it was currently in radians.
+        Assumes it was currently in radians and returns a new SolarAngles 
+        object in degrees
         """
         if self.unit != AngleUnit.RADIAN:
             raise TypeError("These angles aren't in radians.")
 
         angles = (a * 180 / pi for a in self.angles)
-        self.unit = AngleUnit.DEGREE
-        return SolarAngles(*angles)
+        return SolarAngles(*angles, unit=AngleUnit.DEGREE)
 
     def __sub__(self, other: SolarAngles) -> SolarAngles:
         if (self.unit != other.unit):
             raise TypeError(f"Different AngleUnit: this is in {self.unit} but the other is {other.unit}")
 
-        angles = [self.angles[i] - other.angles[i] for i in range(2)]
-        return SolarAngles(*angles, unit=self.unit)
+        out_angles = [self.angles[i] - other.angles[i] for i in range(2)]
+        return SolarAngles(*out_angles, unit=self.unit)
 
     def __repr__(self) -> str:                
-        return f"SolarAngles{self.angles} {self.unit}"
+        return f"SolarAngles{self.angles}" + (self.unit.name if self.unit == AngleUnit.RADIAN else "")
 
 class SolarModel:
+    """
+    Calculates the position of the sun given a certain pose (position and orientation)
+    """
+    
     location: Location = None
     offset: SolarAngles = None
 
@@ -64,7 +68,7 @@ class SolarModel:
         position = get_position(t, lon, lat)
         
         angles = SolarAngles(pi + position["azimuth"], position["altitude"], unit=AngleUnit.RADIAN)
-        
+
         if unit == AngleUnit.DEGREE:
             angles = angles.to_degree()
 
@@ -85,7 +89,11 @@ class SolarModel:
         """
         lat, lon = self.location.get_lat_lon()
         times = get_times(day, lon, lat)
-        return times["sunrise"], times["sunset_start"]
+        out = times["sunrise"], times["sunset_start"]
+
+        # These are returned in UTC but they don't have UTC info yet,
+        # so we add it in
+        return [d.replace(tzinfo=timezone.utc) for d in out]
 
     def split_day_times(self, day: datetime, steps: int = 2):
         """
@@ -104,8 +112,19 @@ class SolarModel:
         out = [sunrise + i * step_amount for i in range(steps)]
         return out
 
-    def split_today(self, steps: int = 2):
-        return self.split_day_times(datetime.utcnow(), steps)
+    def split_today_times(self, steps: int = 2):
+        """
+        Returns split_day_times for today
+        """
+        today = datetime.utcnow()
+        # print(f"Today is {today.date()}")
+        return self.split_day_times(today, steps)
+
+    def times_to_angles(self, times):
+        """
+        Return a list of SolarAngles corresponding to a list of times.
+        """
+        return [self.calc_adjusted_angles(t) for t in times]
 
     @staticmethod
     def readable_times(times: list, verbose: bool = False):
@@ -140,15 +159,23 @@ def main():
         splits = model.split_day_times(t, 3)
         # print(s, position)
         print(SolarModel.readable_times(splits))
+        # print([model.calc_raw_angles(t) for t in splits])
+        # print(model.calc_adjusted_angles(sunset_time))
         # print(end_times)
+        # print(sunset_time - splits[-1])
         # print(s, raw_position)
 
-    print_test(zero_azimuth_time, "zero azimuth")
-    print_test(sunset_time, "sunset")
+    # print_test(zero_azimuth_time, "zero azimuth")
+    # print_test(sunset_time, "sunset")
 
     # print(testing(utc_now))
     # print(testing(test_time))
 
+    # times = model.split_today(5)
+    # angles = [model.calc_adjusted_angles(time) for time in times]
+    
+    # print(times)
+    # print(angles)
 
 
 if __name__ == "__main__":
