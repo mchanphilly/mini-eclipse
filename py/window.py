@@ -81,12 +81,12 @@ class Window:
         if y < 0:
             raise ValueError("y needs to be non-negative")
         if x > self.width:
-            raise ValueError("x needs to be less than the window's width")
+            raise ValueError("x needs to be no more than the window's width")
         if y > self.height:
-            raise ValueError("y needs to be less than the window's height")
+            raise ValueError("y needs to be no more than the window's height")
 
-        l_1 = np.square(x) + np.square(y)
-        l_2 = np.square(self.width - x) + np.square(y)
+        l_1 = np.sqrt(np.square(x) + np.square(y))
+        l_2 = np.sqrt(np.square(self.width - x) + np.square(y))
 
         return (l_1, l_2)
 
@@ -94,7 +94,12 @@ def test():
     w, h = 20, 20
     p = (10, 10, 10)
     window = Window(w, h)
-    print(window.find_position(SolarAngles(0, 70), p))
+    # print(window.find_position(SolarAngles(0, 70), p))
+    print(window.cartesian_to_lengths(10, 10))
+    print(window.cartesian_to_lengths(0, 20))
+
+# def test_length():
+
 
 def main():
     # Units typically in inches

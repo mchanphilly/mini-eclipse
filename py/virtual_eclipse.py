@@ -13,23 +13,36 @@ class VirtualEclipse:
         self.window = window
         self.solar = solar
 
-    def plot_points(self, xs, ys):
-        """
-        Given an iterable of (x, y) points, plot them.
-        """
-        fig, ax = plt.subplots()
+    def plot_window(self, ax):
         w, h = self.window.width, self.window.height
 
         # Construct the window framing
         corners = [(0, 0), (w, 0), (w, h), (0, h)]
         window_edges = [(corners[i], corners[(i+1)%4]) for i in range(4)]
         lines = mpl.collections.LineCollection(window_edges, color="black")
+        
         ax.add_collection(lines)
-
-        # ax.scatter([1, 2, 3], [4, 5, 6])
-        ax.scatter(xs, ys)
         ax.invert_yaxis()
         ax.axis("equal")
+
+        return ax
+
+    def plot_points(self, ax, xs, ys):
+        """
+        Given an iterable of (x, y) points, plot them. Returns ax
+        """
+        ax.scatter(xs, ys)
+        return ax
+
+    def plot_strings(self, ax, xys):
+        top_left = (0, 0)
+        top_right = (self.window.width, 0)
+
+        strings_sets = [[[corner, point] for point in xys] for corner in (top_left, top_right)]
+
+        lines_sets = [mpl.collections.LineCollection(string_set, color="gray") for string_set in strings_sets]
+        [ax.add_collection(lines) for lines in lines_sets]
+        return ax
 
     def plot_today(self, position, steps: int = 2):
         """
@@ -37,13 +50,17 @@ class VirtualEclipse:
         """
         times = self.solar.split_today_times(steps)
         angles = self.solar.times_to_angles(times)
-        # print(angles)
-        xys = [self.window.find_position(angle, position) for angle in angles]
-        # print(xys)
-        xs, ys = list(zip(*xys))
-        # print(xs)
-        self.plot_points(xs, ys)
 
+        # xys is a list of (x,y) pairs
+        xys = [self.window.find_position(angle, position) for angle in angles]
+
+        # xs, ys are two separate lists of the x and y
+        xs, ys = list(zip(*xys))
+        
+        fig, ax = plt.subplots()
+        ax = self.plot_window(ax)
+        ax = self.plot_points(ax, xs, ys)
+        ax = self.plot_strings(ax, xys)
 
 
 def main():
