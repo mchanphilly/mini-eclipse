@@ -14,19 +14,16 @@ class StringMotorPair {
 
   void enable() {
     assert(!isActive);
-    
     digitalWrite(enableMotorPin, LOW);
-    delay(1000);
-
     isActive = true;
   }
 
   void disable() {
     assert(isActive);
 
-    delay(1000);
+    // Necessary so that the momentum is brought to 0 before power is off.
+    delay(50);  // This number can be reduced if speed is lower, but 30ms is good for 300RPM. 50ms to be safe.
     digitalWrite(enableMotorPin, HIGH);
-
     isActive = false;
   }
 
@@ -42,11 +39,24 @@ class StringMotorPair {
     }
 
   void init() {
+    // "Warms up" the motors so that the first
+    // movements aren't duds.
+
+    const int initSteps = 1;
+    const int initDelay = 200;
+
     enable();
-    left.step(1);
-    left.step(-1);
-    right.step(1);
-    right.step(-1);
+
+    delay(initDelay);
+
+    left.step(initSteps);
+    right.step(initSteps);
+
+    delay(initDelay);
+
+    left.step(-initSteps);
+    right.step(-initSteps);
+
     disable();
   }
 

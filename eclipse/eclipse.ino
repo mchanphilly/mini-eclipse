@@ -23,8 +23,8 @@ StringMotorPair motors(numSteps, stepYPin, dirYPin, stepXPin, dirXPin);
 String command;
 
 void setup() {
-  motors.setSpeed(motorRPM);
   pinMode(enableMotorPin, OUTPUT);
+  motors.setSpeed(motorRPM);
   Serial.begin(9600);
   motors.init();
 }
