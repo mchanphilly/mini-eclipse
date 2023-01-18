@@ -1,6 +1,7 @@
 #include <Stepper.h>
 #include <assert.h>
-#include "StringMotorPair.h"
+#include "MotorSystem.h"
+#include "Parser.h"
 // Mini-Eclipse project (January 2023)
 // Martin Chan (philadelphia@mit.edu)
 
@@ -19,8 +20,10 @@ const int maxMotorRPM = 345;
 const int motorRPM = 300;
 static_assert(motorRPM <= maxMotorRPM);
 
-StringMotorPair motors(numSteps, stepYPin, dirYPin, stepXPin, dirXPin);
-String command;
+MotorSystem motors(numSteps, stepYPin, dirYPin, stepXPin, dirXPin);
+Parser parser;
+
+String string;
 
 void setup() {
   pinMode(enableMotorPin, OUTPUT);
@@ -32,13 +35,13 @@ void setup() {
 void loop() {
   // Verify 
   if(Serial.available()){
-      command = Serial.readStringUntil('\n');
+      string = Serial.readStringUntil('\n');
 
-      Serial.println("Received: " + command);
-      if (command.equals("move")) {
-        motors.step(numSteps, numSteps);
-      }
-
+      // Serial.println("Received: " + string);
+      // if (command.equals("move")) {
+      //   motors.step(numSteps, numSteps);
+      // }
+      Parser::Command command = parser.parse(string);
   }
 
   // motors.step(numSteps, numSteps);
