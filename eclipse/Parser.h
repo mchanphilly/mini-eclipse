@@ -20,10 +20,10 @@ class Parser {
         public:
 
         CommandType type;
-        int num1;
-        int num2;
+        float num1;
+        float num2;
 
-        Command(CommandType t, int n1, int n2) {
+        Command(CommandType t, float n1, float n2) {
             type = t;
             num1 = n1;
             num2 = n2;
@@ -80,8 +80,8 @@ class Parser {
         Serial.println(commandString + "|" + intString1 + "|" + intString2);
 
         CommandType type = processType(commandString);
-        int number1 = intString1.toInt();
-        int number2 = intString2.toInt();
+        float number1 = intString1.toFloat();
+        float number2 = intString2.toFloat();
 
         // #ifdef DEBUG
         Serial.print((int)type);

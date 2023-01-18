@@ -17,14 +17,13 @@ const int numSteps = 800;
 
 // motorRPM 345 max
 const int maxMotorRPM = 345;
-const int motorRPM = 300;
+const int motorRPM = 200;
 static_assert(motorRPM <= maxMotorRPM);
 
 MotorSystem motors(numSteps, stepYPin, dirYPin, stepXPin, dirXPin);
 Parser parser;
 
 String string;
-int stepCount = 0;
 
 void setup() {
   pinMode(enableMotorPin, OUTPUT);
@@ -43,27 +42,30 @@ void loop() {
       //   motors.step(numSteps, numSteps);
       // }
       auto command = parser.parse(string);
-      int num1 = command.num1;
-      int num2 = command.num2;
+      float num1 = command.num1;
+      float num2 = command.num2;
 
-      auto commandType = command.type;
-      
-      switch (commandType) {
+      switch (command.type) {
         case Parser::CommandType::Zero:
-          stepCount = 0;
+          motors.zero();  // TODO individual zeroing?
           break;
 
-        case Parser::CommandType::GetSteps:
-          Serial.println(stepCount);
-          break;
+ 
 
         case Parser::CommandType::MoveStep:
+          Serial.println("eueeu");
           motors.step(num1, num2, StringMotor::Unit::Step);
-          stepCount += num1;
           break;
 
         case Parser::CommandType::MoveInch:
           motors.step(num1, num2, StringMotor::Unit::Inch);
+          break;
+
+        case Parser::CommandType::GetSteps:
+          auto steps = motors.getSteps(); 
+          Serial.print(steps[0]);
+          Serial.print(",");
+          Serial.println(steps[1]);
           break;
       }
   }
