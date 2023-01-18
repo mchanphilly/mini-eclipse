@@ -3,6 +3,13 @@
 
 class Parser {
     public:
+    enum class CommandType {
+            Invalid,
+            MoveStep,
+            MoveInch,
+            Zero,
+            GetSteps
+    };
     class Command {
         /**
          * @brief 
@@ -11,12 +18,6 @@ class Parser {
          * e.g. step 1 -30 (move right -30 steps)
          */
         public:
-
-        enum class CommandType {
-            MoveStep,
-            MoveInch,
-            Invalid
-        };
 
         CommandType type;
         int num1;
@@ -30,14 +31,19 @@ class Parser {
     };
 
     private:
-    Command::CommandType processType(String commandString) {
-        // if commandString.equals("step") {
+    CommandType processType(String commandString) {
+        #define parseCase(str, ct) if (commandString.equals(str)) {return CommandType::ct;}
 
-        // }
-    }
+        parseCase("step", MoveStep);
+        
+        parseCase("inch", MoveInch);
 
-    int processInt(String intString) {
+        parseCase("getsteps", GetSteps);
 
+        parseCase("zero", Zero);
+
+        // Shouldn't get here if we had a valid command.
+        return CommandType::Invalid;
     }
 
     public:
@@ -52,31 +58,40 @@ class Parser {
      *      - Either 0 or the relevant number. 
      */
     Command parse(String string) {
+        String intString1 = "";
+        String intString2 = "";
+
         Serial.println("Entered: " + string);
 
         int split1 = string.indexOf(" ");
         int split2 = string.indexOf(" ", split1 + 1);
 
-        if (split1 < 0) {
-            Serial.println("No space present");
-        }
-
         String commandString = string.substring(0, split1);
 
-        String intString1 = string.substring(split1 + 1, split2);
-        String intString2 = string.substring(split2 + 1);
+        if (split1 > 0) {
+            if (split2 > 0) {
+                intString1 = string.substring(split1 + 1, split2);
+                intString2 = string.substring(split2 + 1);
+            } else {
+                intString1 = string.substring(split1 + 1);
+            }
+        }
 
         Serial.println(commandString + "|" + intString1 + "|" + intString2);
 
-        // Command::CommandType type = processType(commandString);
-        // int number = processNumber(intString);
+        CommandType type = processType(commandString);
+        int number1 = intString1.toInt();
+        int number2 = intString2.toInt();
 
-        // Serial.print("Command: ");
-        // Serial.print((int)type);
-        // Serial.print(" with number ");
-        // Serial.println(number);
+        // #ifdef DEBUG
+        Serial.print((int)type);
+        Serial.print("|");
+        Serial.print(number1);
+        Serial.print("|");
+        Serial.println(number2);
+        // #endif
 
-        return Command(Command::CommandType::Invalid, 0, 0);
+        return Command(type, number1, number2);
     }
 };
 

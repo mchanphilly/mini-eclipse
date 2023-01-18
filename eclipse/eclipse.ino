@@ -24,6 +24,7 @@ MotorSystem motors(numSteps, stepYPin, dirYPin, stepXPin, dirXPin);
 Parser parser;
 
 String string;
+int stepCount = 0;
 
 void setup() {
   pinMode(enableMotorPin, OUTPUT);
@@ -41,7 +42,30 @@ void loop() {
       // if (command.equals("move")) {
       //   motors.step(numSteps, numSteps);
       // }
-      Parser::Command command = parser.parse(string);
+      auto command = parser.parse(string);
+      int num1 = command.num1;
+      int num2 = command.num2;
+
+      auto commandType = command.type;
+      
+      switch (commandType) {
+        case Parser::CommandType::Zero:
+          stepCount = 0;
+          break;
+
+        case Parser::CommandType::GetSteps:
+          Serial.println(stepCount);
+          break;
+
+        case Parser::CommandType::MoveStep:
+          motors.step(num1, num2, StringMotor::Unit::Step);
+          stepCount += num1;
+          break;
+
+        case Parser::CommandType::MoveInch:
+          motors.step(num1, num2, StringMotor::Unit::Inch);
+          break;
+      }
   }
 
   // motors.step(numSteps, numSteps);
