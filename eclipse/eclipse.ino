@@ -34,12 +34,11 @@ void execute(Parser::Command command) {
         break;
 
       case Parser::CommandType::MoveStep:
-        Serial.println("eueeu");
-        motors.step(num1, num2, StringMotor::Unit::Step);
+        motors.step(num1, num2, MotorSystem::Unit::Step);
         break;
 
       case Parser::CommandType::MoveInch:
-        motors.step(num1, num2, StringMotor::Unit::Inch);
+        motors.step(num1, num2, MotorSystem::Unit::Inch);
         break;
 
       case Parser::CommandType::GetSteps:

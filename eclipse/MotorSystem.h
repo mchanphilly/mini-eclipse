@@ -4,13 +4,11 @@
 #include <Stepper.h>
 #include <assert.h>
 
-#include "StringMotor.h"
-
 class MotorSystem {
   // Used as a wrapper for the Stepper, but with some added
   // features.
-  StringMotor left;
-  StringMotor right;
+  Stepper left;
+  Stepper right;
   static const int enableMotorPin = 8;
   const float leftStepsPerInch = 325;
   const float rightStepsPerInch = 325;
@@ -35,14 +33,19 @@ class MotorSystem {
   }
 
   public:
+  enum class Unit {
+    Step,
+    Inch
+  };
+  
   MotorSystem(
               const int numSteps,
               const int leftPin1,
               const int leftPin2,
               const int rightPin1,
               const int rightPin2):
-    left(numSteps, leftPin1, leftPin2, leftStepsPerInch),
-    right(numSteps, rightPin1, rightPin2, rightStepsPerInch)
+    left(numSteps, leftPin1, leftPin2),
+    right(numSteps, rightPin1, rightPin2)
     {
     }
 
@@ -69,13 +72,29 @@ class MotorSystem {
     disable();
   }
 
-  void step(float leftSteps, float rightSteps, StringMotor::Unit unit) {
+  void step(float leftNum, float rightNum, Unit unit) {
     enable();
 
-    // do a jank threading sort of deal
+    int leftSteps;
+    int rightSteps;
 
-    steps[0] -= left.step(-leftSteps, unit);
-    steps[1] += right.step(rightSteps, unit);
+    // do a jank threading sort of deal
+    switch (unit) {
+        case Unit::Inch:
+            leftSteps = floor(leftStepsPerInch * leftNum);
+            rightSteps = floor(rightStepsPerInch * rightNum);
+            break;
+        case Unit::Step:
+            leftSteps = (int)leftNum;
+            rightSteps = (int)rightNum;
+            break;
+    }
+
+    left.step(-leftSteps);
+    right.step(rightSteps);
+    
+    steps[0] += leftSteps;
+    steps[1] += rightSteps;
     disable();
   }
 
