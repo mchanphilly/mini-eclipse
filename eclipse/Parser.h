@@ -7,6 +7,7 @@ class Parser {
             Invalid,
             Test,  // test [testNumber] (executes a test in Test) [UNUSED]
 
+
             MoveStep,  // step [str1] [str2] (moves the string by these steps)
             MoveInch,  // inch [str1] [str2] (moves the string by these inches)
             
@@ -17,6 +18,7 @@ class Parser {
             Go, // go [x] [y]
             Shift, // shift [x] [y]
             Zero, // zero (sets current to 0, 0)
+            SetString,  // setstring [str1] [str2] (sets internal length record to str1, str2 if str > 0)
     };
     class Command {
         /**
@@ -46,7 +48,7 @@ class Parser {
         
         parseCase("inch", MoveInch);
 
-        parseCase("getsteps", GetSteps);
+        parseCase("getstep", GetSteps);
 
         parseCase("zero", Zero);
 
