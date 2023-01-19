@@ -7,18 +7,21 @@ class Parser {
             Invalid,
             Test,  // test [testNumber] (executes a test in Test) [UNUSED]
 
-
-            MoveStep,  // step [str1] [str2] (moves the string by these steps)
-            MoveInch,  // inch [str1] [str2] (moves the string by these inches)
-            
             GetSteps,  // getstep (gets steps from the zero)
-            GetString,  // getstring (get string inches from the zero)
+            CalibrateStep, // cstep [opt1] [opt2] (set step counter)
+            MoveStep,  // step [str1] [str2] (moves the string by these steps)
+            GoStep,  // gostep [str1] [str2]
+
+            GetInch,  // getinch (get string inches from the zero)
+            CalibrateInch,  // cinch [str1] [str2] (sets internal length record to str1, str2 if str > 0)
+            MoveInch,  // inch [str1] [str2] (moves the string by these inches)
+            GoString,  // goinch [str1] [str2] ()
+
             GetPosition,  // getpos (get x, y coordinates)
 
             Go, // go [x] [y]
             Shift, // shift [x] [y]
             Zero, // zero (sets current to 0, 0)
-            SetString,  // setstring [str1] [str2] (sets internal length record to str1, str2 if str > 0)
     };
     class Command {
         /**
