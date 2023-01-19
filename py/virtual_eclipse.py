@@ -14,6 +14,9 @@ class VirtualEclipse:
         self.solar = solar
 
     def plot_window(self, ax):
+        """
+        Creates the "window" figure with the edges of the window.
+        """
         w, h = self.window.width, self.window.height
 
         # Construct the window framing
@@ -27,14 +30,17 @@ class VirtualEclipse:
 
         return ax
 
-    def plot_points(self, ax, xs, ys):
+    def plot_all_points(self, ax, xs, ys):
         """
-        Given an iterable of (x, y) points, plot them. Returns ax
+        Given an iterable x and corresponding iterable of y, plot these points.
         """
         ax.scatter(xs, ys)
         return ax
 
-    def plot_strings(self, ax, xys):
+    def plot_all_strings(self, ax, xys):
+        """
+        Given an iterable of (x, y) points, plot the strings to those points.
+        """
         top_left = (0, 0)
         top_right = (self.window.width, 0)
 
@@ -44,15 +50,50 @@ class VirtualEclipse:
         [ax.add_collection(lines) for lines in lines_sets]
         return ax
 
-    def plot_today(self, position, steps: int = 2):
+    def get_today_points(self, position, steps: int = 2):
         """
-        Plots today's points on the window, where the number of points is steps.
+        Get today's points as an iterable of (x, y) pairs and times in tuple pair (xys, times)
+        
+        Sunrise and sunset are guaranteed.
+
+        Each step is equally spaced in time, and the iterable is of length steps.
+
+        Note that the first and last steps aren't guaranteed to be on the plot, so more granularity
+        is required if the position is further from the window.
+        
+        TODO Future development might allow steps to describe points within the bounds of the window,
+        though this would require some processing to see how we get those points. (e.g. if we're right 
+        on the window, all points of the day qualify as long as we can see sunrise and sunset, but 
+        if we're all the way in the back of the room, we might see only a narrow part of the day.)
+        TODO See get_included_points()
         """
         times = self.solar.split_today_times(steps)
         angles = self.solar.times_to_angles(times)
 
         # xys is a list of (x,y) pairs
         xys = [self.window.find_position(angle, position) for angle in angles]
+
+        return (xys, times)
+
+    def get_included_points(self, position, steps: int = 2):
+        """
+        TODO 
+        Get today's points as an iterable of (x, y) pairs, but only the points that are
+        within the frame of the window from the position.
+
+        TODO Implementation tips:
+        - Could preprocess to see the angle bounds from the position (both azimuthal and altitudinal)
+        - Could binary search to see what times we see the early and late bound of each angular coordinate.
+        - Could do linear interpolation in time between the two inner times of the four above times.
+        - Process from there.
+        """
+        raise NotImplementedError()
+
+    def plot_all_today(self, position, steps: int = 2):
+        """
+        Plots today's points on the window, where the number of points is steps.
+        """
+        xys, _ = self.get_today_points(self, position, steps)
 
         # xs, ys are two separate lists of the x and y
         xs, ys = list(zip(*xys))
@@ -61,6 +102,16 @@ class VirtualEclipse:
         ax = self.plot_window(ax)
         ax = self.plot_points(ax, xs, ys)
         ax = self.plot_strings(ax, xys)
+
+    def plot_today(self, position, steps: int = 2):
+        """
+        Plots an interactive simulation of a day's worth of movements according to steps.
+        """
+        xys, times = self.get_included_points(self, position, steps)
+
+        fig, ax = plt.subplots()
+        ax = self.plot_window(ax)
+        
 
 
 def main():
