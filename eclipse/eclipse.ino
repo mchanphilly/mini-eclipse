@@ -24,6 +24,33 @@ Parser parser;
 
 String string;
 
+void execute(Parser::Command command) {
+    float num1 = command.num1;
+    float num2 = command.num2;
+
+    switch (command.type) {
+      case Parser::CommandType::Zero:
+        motors.zero();  // TODO individual zeroing?
+        break;
+
+      case Parser::CommandType::MoveStep:
+        Serial.println("eueeu");
+        motors.step(num1, num2, StringMotor::Unit::Step);
+        break;
+
+      case Parser::CommandType::MoveInch:
+        motors.step(num1, num2, StringMotor::Unit::Inch);
+        break;
+
+      case Parser::CommandType::GetSteps:
+        auto steps = motors.getSteps(); 
+        Serial.print(steps[0]);
+        Serial.print(",");
+        Serial.println(steps[1]);
+        break;
+    }
+}
+
 void setup() {
   pinMode(enableMotorPin, OUTPUT);
   motors.setSpeed(motorRPM);
@@ -36,37 +63,8 @@ void loop() {
   if(Serial.available()){
       string = Serial.readStringUntil('\n');
 
-      // Serial.println("Received: " + string);
-      // if (command.equals("move")) {
-      //   motors.step(numSteps, numSteps);
-      // }
       auto command = parser.parse(string);
-      float num1 = command.num1;
-      float num2 = command.num2;
-
-      switch (command.type) {
-        case Parser::CommandType::Zero:
-          motors.zero();  // TODO individual zeroing?
-          break;
-
- 
-
-        case Parser::CommandType::MoveStep:
-          Serial.println("eueeu");
-          motors.step(num1, num2, StringMotor::Unit::Step);
-          break;
-
-        case Parser::CommandType::MoveInch:
-          motors.step(num1, num2, StringMotor::Unit::Inch);
-          break;
-
-        case Parser::CommandType::GetSteps:
-          auto steps = motors.getSteps(); 
-          Serial.print(steps[0]);
-          Serial.print(",");
-          Serial.println(steps[1]);
-          break;
-      }
+      execute(command);
   }
 
   // motors.step(numSteps, numSteps);
