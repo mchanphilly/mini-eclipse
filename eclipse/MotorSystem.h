@@ -21,6 +21,7 @@ class MotorSystem {
     assert(!isActive);
     digitalWrite(enableMotorPin, LOW);
     isActive = true;
+    delay(100);
   }
 
   void disable() {
