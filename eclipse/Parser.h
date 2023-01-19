@@ -5,10 +5,16 @@ class Parser {
     public:
     enum class CommandType {
             Invalid,
-            MoveStep,
-            MoveInch,
-            Zero,
-            GetSteps
+            MoveStep,  // step [str1] [str2]
+            MoveInch,  // inch [str1] [str2]
+            
+            Zero,  // zero (resets step coordinates)
+            GetSteps,  // getstep (gets steps from the zero)
+            GetString,  // getstring (get string inches from the zero)
+            GetPosition,  // getpos (get x, y) coordinates
+            Go, // go [x] [y]
+            Shift, // shift [x] [y]
+            Calibrate, // 
     };
     class Command {
         /**
@@ -77,7 +83,7 @@ class Parser {
             }
         }
 
-        Serial.println(commandString + "|" + intString1 + "|" + intString2);
+        // Serial.println(commandString + "|" + intString1 + "|" + intString2);
 
         CommandType type = processType(commandString);
         float number1 = intString1.toFloat();
