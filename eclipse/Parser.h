@@ -5,16 +5,17 @@ class Parser {
     public:
     enum class CommandType {
             Invalid,
+
             MoveStep,  // step [str1] [str2]
             MoveInch,  // inch [str1] [str2]
             
-            Zero,  // zero (resets step coordinates)
             GetSteps,  // getstep (gets steps from the zero)
             GetString,  // getstring (get string inches from the zero)
-            GetPosition,  // getpos (get x, y) coordinates
+            GetPosition,  // getpos (get x, y coordinates)
+
             Go, // go [x] [y]
             Shift, // shift [x] [y]
-            Calibrate, // 
+            Zero, // zero (sets current to 0, 0)
     };
     class Command {
         /**
