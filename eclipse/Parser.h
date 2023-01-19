@@ -5,9 +5,10 @@ class Parser {
     public:
     enum class CommandType {
             Invalid,
+            Test,  // test [testNumber] (executes a test in Test) [UNUSED]
 
-            MoveStep,  // step [str1] [str2]
-            MoveInch,  // inch [str1] [str2]
+            MoveStep,  // step [str1] [str2] (moves the string by these steps)
+            MoveInch,  // inch [str1] [str2] (moves the string by these inches)
             
             GetSteps,  // getstep (gets steps from the zero)
             GetString,  // getstring (get string inches from the zero)
