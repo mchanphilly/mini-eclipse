@@ -14,7 +14,7 @@ const int enableMotorPin = 8;
 
 // motorRPM 345 max
 const int maxMotorRPM = 345;
-const int motorRPM = 200;
+const int motorRPM = 320;
 static_assert(motorRPM <= maxMotorRPM);
 
 const int numSteps = 800;

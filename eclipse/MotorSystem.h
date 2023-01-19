@@ -73,10 +73,11 @@ class MotorSystem {
   }
 
   void step(float leftNum, float rightNum, Unit unit) {
-    enable();
-
+    const int stepsPerStage = 1;
     int leftSteps;
     int rightSteps;
+
+    enable();
 
     // do a jank threading sort of deal
     switch (unit) {
@@ -89,10 +90,32 @@ class MotorSystem {
             rightSteps = (int)rightNum;
             break;
     }
+    //   int leftSign = signbit(leftSteps) ? -1 : 1;
+    //   int rightSign = signbit(rightSteps) ? -1 : 1;
+      
+    //   int absLeft = abs(leftSteps);
+    //   int absRight = abs(rightSteps);
+    // // TODO generalize to not just left > right
+    // // if (leftSteps > rightSteps) {
+    //   int leftStages = absLeft / stepsPerStage;
+    //   int rightStepsPerStage = absRight / leftStages;
 
+    //   int leftRemainder = absLeft % stepsPerStage;
+    //   int rightRemainder = absRight % rightStepsPerStage;
+    // // }
+    
+    // for (int i = 0; i < leftStages; i++) {
+    //   left.step(-stepsPerStage * leftSign);
+    //   right.step(rightStepsPerStage * rightSign);
+    // }
+
+    // left.step(-leftRemainder * leftSign);
+    // right.step(rightRemainder * rightSign);
+    
     left.step(-leftSteps);
     right.step(rightSteps);
-    
+
+
     steps[0] += leftSteps;
     steps[1] += rightSteps;
     disable();
