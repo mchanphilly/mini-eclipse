@@ -12,13 +12,12 @@ const int stepYPin = 3;
 const int dirYPin = 6;
 const int enableMotorPin = 8;
 
-// TODO verify that numSteps is really 800 per revolution.
-const int numSteps = 800;
-
 // motorRPM 345 max
 const int maxMotorRPM = 345;
 const int motorRPM = 200;
 static_assert(motorRPM <= maxMotorRPM);
+
+const int numSteps = 800;
 
 MotorSystem motors(numSteps, stepYPin, dirYPin, stepXPin, dirXPin);
 Parser parser;

@@ -12,6 +12,7 @@ class MotorSystem {
   StringMotor left;
   StringMotor right;
   static const int enableMotorPin = 8;
+
   bool isActive = false;
 
   int steps[2] = {0};
@@ -32,7 +33,8 @@ class MotorSystem {
   }
 
   public:
-  MotorSystem(const int numSteps,
+  MotorSystem(
+              const int numSteps,
               const int leftPin1,
               const int leftPin2,
               const int rightPin1,
