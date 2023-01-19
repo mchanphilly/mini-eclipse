@@ -21,7 +21,7 @@ class MotorSystem {
     assert(!isActive);
     digitalWrite(enableMotorPin, LOW);
     isActive = true;
-    delay(100);
+    delay(200);
   }
 
   void disable() {
@@ -91,8 +91,8 @@ class MotorSystem {
             rightSteps = (int)rightNum;
             break;
     }
-    //   int leftSign = signbit(leftSteps) ? -1 : 1;
-    //   int rightSign = signbit(rightSteps) ? -1 : 1;
+      int leftSign = signbit(leftSteps) ? -1 : 1;
+      int rightSign = signbit(rightSteps) ? -1 : 1;
       
     //   int absLeft = abs(leftSteps);
     //   int absRight = abs(rightSteps);
@@ -113,8 +113,20 @@ class MotorSystem {
     // left.step(-leftRemainder * leftSign);
     // right.step(rightRemainder * rightSign);
     
-    left.step(-leftSteps);
-    right.step(rightSteps);
+    int sharedSteps = min(abs(leftSteps), abs(rightSteps));
+    for (int i = 0; i < sharedSteps; i++) {
+      left.step(-leftSign);
+      right.step(rightSign);
+    }
+
+    int stepsToGo;
+    if (abs(leftSteps) > abs(rightSteps)) {
+      stepsToGo = abs(leftSteps) - sharedSteps;
+      left.step(-stepsToGo * leftSign);
+    } else {
+      stepsToGo = abs(rightSteps) - sharedSteps;
+      right.step(stepsToGo * rightSign);
+    }
 
 
     steps[0] += leftSteps;
