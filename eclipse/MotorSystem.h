@@ -12,6 +12,8 @@ class MotorSystem {
   StringMotor left;
   StringMotor right;
   static const int enableMotorPin = 8;
+  const float leftStepsPerInch = 325;
+  const float rightStepsPerInch = 325;
 
   bool isActive = false;
 
@@ -39,8 +41,8 @@ class MotorSystem {
               const int leftPin2,
               const int rightPin1,
               const int rightPin2):
-    left(numSteps, leftPin1, leftPin2),
-    right(numSteps, rightPin1, rightPin2)
+    left(numSteps, leftPin1, leftPin2, leftStepsPerInch),
+    right(numSteps, rightPin1, rightPin2, rightStepsPerInch)
     {
     }
 
@@ -69,6 +71,9 @@ class MotorSystem {
 
   void step(float leftSteps, float rightSteps, StringMotor::Unit unit) {
     enable();
+
+    // do a jank threading sort of deal
+
     steps[0] -= left.step(-leftSteps, unit);
     steps[1] += right.step(rightSteps, unit);
     disable();

@@ -5,8 +5,8 @@
 #include <assert.h>
 
 class StringMotor {
-    const float stepsPerInch = 325;
     Stepper motor;
+    const float stepsPerInch;
 
     public:
 
@@ -17,8 +17,9 @@ class StringMotor {
 
     StringMotor(const int numSteps,
                 const int pin1,
-                const int pin2):
-        motor(numSteps, pin1, pin2)
+                const int pin2,
+                const float _stepsPerInch):
+        motor(numSteps, pin1, pin2), stepsPerInch{_stepsPerInch}
         {
         }
 
