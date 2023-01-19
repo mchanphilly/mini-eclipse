@@ -21,7 +21,7 @@ class MotorSystem {
     assert(!isActive);
     digitalWrite(enableMotorPin, LOW);
     isActive = true;
-    delay(500);
+    delay(100);  // Doesn't impact motor stuttering
   }
 
   void disable() {
@@ -59,13 +59,8 @@ class MotorSystem {
 
     enable();
 
-    delay(initDelay);
-
-    // TODO parallelize (not too big a priority)
     left.step(initSteps);
     right.step(initSteps);
-
-    delay(initDelay);
 
     left.step(-initSteps);
     right.step(-initSteps);
