@@ -34,17 +34,17 @@ void execute(Parser::Command command) {
   // If only this was C++17 and not C++11
   // using enum Parser::CommandType;
 
-  MotorSystem::Unit unit;
+  MotorSystem::Unit unit = MotorSystem::Unit::Invalid;
   switch (command.type) {
-    case Parser::CommandType::MoveStep:
+    case Parser::CommandType::ShiftStep:
     case Parser::CommandType::GoStep:
-    case Parser::CommandType::CalibrateStep:
+    case Parser::CommandType::GetStep:
       unit = MotorSystem::Unit::Step;
       break;
 
-    case Parser::CommandType::MoveInch:
+    case Parser::CommandType::ShiftInch:
     case Parser::CommandType::GoInch:
-    case Parser::CommandType::CalibrateInch:
+    case Parser::CommandType::GetInch:
       unit = MotorSystem::Unit::Inch;
       break;
   }
@@ -54,8 +54,8 @@ void execute(Parser::Command command) {
       motors.zero();  // TODO individual zeroing?
       break;
 
-    case Parser::CommandType::MoveStep:
-    case Parser::CommandType::MoveInch:
+    case Parser::CommandType::ShiftStep:
+    case Parser::CommandType::ShiftInch:
       motors.step(num1, num2, unit);
       break;
 
@@ -64,11 +64,14 @@ void execute(Parser::Command command) {
       motors.go(num1, num2, unit);
       break;
 
-    case Parser::CommandType::GetSteps:
-      auto steps = motors.getSteps();
-      Serial.print(steps[0]);
+    case Parser::CommandType::GetStep:
+    case Parser::CommandType::GetInch:
+      float pair[2];
+      
+      motors.getStep(pair, unit);
+      Serial.print(pair[0]);
       Serial.print(",");
-      Serial.println(steps[1]);
+      Serial.println(pair[1]);
       break;
   }
 }

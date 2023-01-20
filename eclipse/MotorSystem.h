@@ -10,6 +10,7 @@ class MotorSystem {
 
   public:
     enum class Unit {
+      Invalid,
       Step,
       Inch
     };
@@ -163,8 +164,20 @@ class MotorSystem {
     memset(steps, 0, sizeof(steps));
   }
 
-  int* getSteps() {
-    return this->steps;
+  void getStep(float pair[2], Unit unit) {
+    // Serial.println(steps[0]);
+    // Serial.println((int)pair);
+    switch (unit) {
+        case Unit::Inch:
+          pair[0] = steps[0] / leftStepsPerInch;
+          pair[1] = steps[1] / rightStepsPerInch;
+          break;
+        case Unit::Step:
+          // TODO I'm sure there's a better way to write this.
+          pair[0] = steps[0];
+          pair[1] = steps[1];
+          break;
+    }
   }
 };
 

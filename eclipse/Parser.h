@@ -7,21 +7,20 @@ class Parser {
             Invalid,
             Test,  // test [testNumber] (executes a test in Test) [UNUSED]
 
-            GetSteps,  // getstep (gets steps from the zero)
-            CalibrateStep, // cstep [opt1] [opt2] (set step counter)
-            MoveStep,  // step [str1] [str2] (moves the string by these steps)
+            GetStep,  // getstep (gets steps from the zero)
             GoStep,  // gostep [str1] [str2]
+            ShiftStep,  // step [str1] [str2] (moves the string by these steps)
 
             GetInch,  // getinch (get string inches from the zero)
-            CalibrateInch,  // cinch [str1] [str2] (sets internal length record to str1, str2 if str > 0)
-            MoveInch,  // inch [str1] [str2] (moves the string by these inches)
             GoInch,  // goinch [str1] [str2] ()
+            ShiftInch,  // inch [str1] [str2] (moves the string by these inches)
+
+            Zero, // zero (sets current step counts to 0, 0)  (use in debugging only)
 
             GetPosition,  // getpos (get x, y coordinates)
-
             Go, // go [x] [y]
             Shift, // shift [x] [y]
-            Zero, // zero (sets current to 0, 0)
+            Calibrate, // calibrate [str1] [str2] (declare current position as (0, 0) with str lengths)
     };
     class Command {
         /**
@@ -47,15 +46,19 @@ class Parser {
     CommandType processType(String commandString) {
         #define parseCase(str, ct) if (commandString.equals(str)) {return CommandType::ct;}
 
-        parseCase("step", MoveStep);
+        parseCase("step", ShiftStep);
         parseCase("gostep", GoStep);
 
-        parseCase("inch", MoveInch);
+        parseCase("inch", ShiftInch);
         parseCase("goinch", GoInch);
 
-        parseCase("getstep", GetSteps);
+        parseCase("getstep", GetStep);
+        parseCase("getinch", GetInch);
 
         parseCase("zero", Zero);
+
+        parseCase("go", Go);
+        parseCase("shift", Shift);
 
         // Shouldn't get here if we had a valid command.
         return CommandType::Invalid;
