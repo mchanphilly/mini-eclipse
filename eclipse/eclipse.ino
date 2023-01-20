@@ -28,47 +28,49 @@ Parser parser;
 String string;
 
 void execute(Parser::Command command) {
-    float num1 = command.num1;
-    float num2 = command.num2;
+  float num1 = command.num1;
+  float num2 = command.num2;
 
-    MotorSystem::Unit unit;
-    switch (command.type) {
-      case Parser::CommandType::MoveStep:
-      case Parser::CommandType::GoStep:
-      case Parser::CommandType::CalibrateStep:
-        unit = MotorSystem::Unit::Step;
-        break;
-      
-      case Parser::CommandType::MoveInch:
-      case Parser::CommandType::GoInch:
-      case Parser::CommandType::CalibrateInch:
-        unit = MotorSystem::Unit::Inch;
-        break;
-    }
+  // If only this was C++17 and not C++11
+  // using enum Parser::CommandType;
 
-    switch (command.type) {
-      case Parser::CommandType::Zero:
-        motors.zero();  // TODO individual zeroing?
-        break;
+  MotorSystem::Unit unit;
+  switch (command.type) {
+    case Parser::CommandType::MoveStep:
+    case Parser::CommandType::GoStep:
+    case Parser::CommandType::CalibrateStep:
+      unit = MotorSystem::Unit::Step;
+      break;
 
-      case Parser::CommandType::MoveStep:
-      case Parser::CommandType::MoveInch:
-        motors.step(num1, num2, unit);
-        break;
+    case Parser::CommandType::MoveInch:
+    case Parser::CommandType::GoInch:
+    case Parser::CommandType::CalibrateInch:
+      unit = MotorSystem::Unit::Inch;
+      break;
+  }
 
-      case Parser::CommandType::GoStep:
-      case Parser::CommandType::GoInch:
-        motors.go(num1, num2, unit);
-        break;
+  switch (command.type) {
+    case Parser::CommandType::Zero:
+      motors.zero();  // TODO individual zeroing?
+      break;
 
-      case Parser::CommandType::GetSteps:
-        auto steps = motors.getSteps(); 
-        Serial.print(steps[0]);
-        Serial.print(",");
-        Serial.println(steps[1]);
-        break;
+    case Parser::CommandType::MoveStep:
+    case Parser::CommandType::MoveInch:
+      motors.step(num1, num2, unit);
+      break;
 
-    }
+    case Parser::CommandType::GoStep:
+    case Parser::CommandType::GoInch:
+      motors.go(num1, num2, unit);
+      break;
+
+    case Parser::CommandType::GetSteps:
+      auto steps = motors.getSteps();
+      Serial.print(steps[0]);
+      Serial.print(",");
+      Serial.println(steps[1]);
+      break;
+  }
 }
 
 void setup() {
@@ -79,12 +81,12 @@ void setup() {
 }
 
 void loop() {
-  // Verify 
-  if(Serial.available()){
-      string = Serial.readStringUntil('\n');
+  // Verify
+  if (Serial.available()) {
+    string = Serial.readStringUntil('\n');
 
-      auto command = parser.parse(string);
-      execute(command);
+    auto command = parser.parse(string);
+    execute(command);
   }
 
   // motors.step(numSteps, numSteps);
