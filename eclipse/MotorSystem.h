@@ -12,9 +12,9 @@ class MotorSystem {
 
   // Physical parameters
   static const int enableMotorPin = 8;
-  const float leftStepsPerInch = 325;
-  const float rightStepsPerInch = 325;
-  const float inchesApart = 41; // Distance between the motors (here center of spools)
+  const float leftStepsPerInch = 331;
+  const float rightStepsPerInch = 331;
+  const float inchesApart = 41.75; // Distance between the string origins)
   // Simplifying assumption that this is the same as the width of the window.
 
   bool isActive = false;
