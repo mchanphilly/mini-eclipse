@@ -1,5 +1,6 @@
 #include <Stepper.h>
 #include <assert.h>
+#include "BlockerSystem.h"
 #include "MotorSystem.h"
 #include "Parser.h"
 // Mini-Eclipse project (January 2023)
@@ -19,6 +20,8 @@ static_assert(motorRPM <= maxMotorRPM);
 
 const int numSteps = 800;
 
+
+BlockerSystem blocker();
 MotorSystem motors(numSteps, stepYPin, dirYPin, stepXPin, dirXPin);
 Parser parser;
 
@@ -37,9 +40,16 @@ void execute(Parser::Command command) {
         motors.step(num1, num2, MotorSystem::Unit::Step);
         break;
 
+      case Parser::CommandType::GoStep:
+        motors.go(num1, num2, MotorSystem::Unit::Step);
+        break;
+
       case Parser::CommandType::MoveInch:
         motors.step(num1, num2, MotorSystem::Unit::Inch);
         break;
+
+      case Parser::CommandType::GoInch:
+        motors.go(num1, num2, MotorSystem::Unit::Inch);
 
       case Parser::CommandType::GetSteps:
         auto steps = motors.getSteps(); 
@@ -47,6 +57,7 @@ void execute(Parser::Command command) {
         Serial.print(",");
         Serial.println(steps[1]);
         break;
+
     }
 }
 

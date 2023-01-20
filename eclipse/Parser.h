@@ -15,7 +15,7 @@ class Parser {
             GetInch,  // getinch (get string inches from the zero)
             CalibrateInch,  // cinch [str1] [str2] (sets internal length record to str1, str2 if str > 0)
             MoveInch,  // inch [str1] [str2] (moves the string by these inches)
-            GoString,  // goinch [str1] [str2] ()
+            GoInch,  // goinch [str1] [str2] ()
 
             GetPosition,  // getpos (get x, y coordinates)
 
@@ -48,8 +48,10 @@ class Parser {
         #define parseCase(str, ct) if (commandString.equals(str)) {return CommandType::ct;}
 
         parseCase("step", MoveStep);
-        
+        parseCase("gostep", GoStep);
+
         parseCase("inch", MoveInch);
+        parseCase("goinch", GoInch);
 
         parseCase("getstep", GetSteps);
 
