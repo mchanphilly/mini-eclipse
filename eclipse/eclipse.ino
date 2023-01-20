@@ -31,25 +31,35 @@ void execute(Parser::Command command) {
     float num1 = command.num1;
     float num2 = command.num2;
 
+    MotorSystem::Unit unit;
+    switch (command.type) {
+      case Parser::CommandType::MoveStep:
+      case Parser::CommandType::GoStep:
+      case Parser::CommandType::CalibrateStep:
+        unit = MotorSystem::Unit::Step;
+        break;
+      
+      case Parser::CommandType::MoveInch:
+      case Parser::CommandType::GoInch:
+      case Parser::CommandType::CalibrateInch:
+        unit = MotorSystem::Unit::Inch;
+        break;
+    }
+
     switch (command.type) {
       case Parser::CommandType::Zero:
         motors.zero();  // TODO individual zeroing?
         break;
 
       case Parser::CommandType::MoveStep:
-        motors.step(num1, num2, MotorSystem::Unit::Step);
+      case Parser::CommandType::MoveInch:
+        motors.step(num1, num2, unit);
         break;
 
       case Parser::CommandType::GoStep:
-        motors.go(num1, num2, MotorSystem::Unit::Step);
-        break;
-
-      case Parser::CommandType::MoveInch:
-        motors.step(num1, num2, MotorSystem::Unit::Inch);
-        break;
-
       case Parser::CommandType::GoInch:
-        motors.go(num1, num2, MotorSystem::Unit::Inch);
+        motors.go(num1, num2, unit);
+        break;
 
       case Parser::CommandType::GetSteps:
         auto steps = motors.getSteps(); 
