@@ -19,16 +19,6 @@ Parser parser;
 
 String string;
 
-void softZero(double pair[2]) {
-  motors.getLengths(pair, MotorSystem::Unit::Inch);
-  blocker.softZero(pair);
-}
-
-void hardZero(double pair[2]) {
-  motors.getLengths(pair, MotorSystem::Unit::Inch);
-  blocker.hardZero(pair);
-}
-
 void printPair(double pair[2]) {
   Serial.print(pair[0]);
   Serial.print(",");
@@ -80,14 +70,14 @@ void execute(Parser::Command command) {
         // assert(num1 > 0);
         // assert(num2 > 0);
         motors.zero(num1, num2);
-        softZero(pair);
+        blocker.softZero(pair);
         break;
 
     case Parser::CommandType::HardZero:
         // assert(num1 > 0);
         // assert(num2 > 0);
         motors.zero(num1, num2);
-        hardZero(pair);
+        blocker.hardZero(pair);
         break;
 
     case Parser::CommandType::Go:
@@ -113,9 +103,10 @@ void setup() {
   Serial.begin(9600);
   motors.init();
 
-  double pair[2];
-  hardZero(pair);
-  printPair(pair);
+  double lengths[2];
+  motors.getLengths(lengths, MotorSystem::Unit::Inch);
+  blocker.hardZero(lengths);
+  printPair(lengths);
 }
 
 void loop() {
