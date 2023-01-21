@@ -177,29 +177,25 @@ class MotorSystem {
      */
 
     // Step together when the two motors can (one step per turn)
-    Stepper *lesserStepper;
-    Stepper *greaterStepper;
+    // Stepper *lesserStepper;
+    // Stepper *greaterStepper;
+
+    Stepper *steppers[2] = {&left, &right};
+    int signs[2] = {leftSign, rightSign};
 
     int maxSteps = max(abs(leftSteps), abs(rightSteps));
-    bool leftBigger = abs(leftSteps) > abs(rightSteps);
-
-
-    int lesserSign, greaterSign;
-    greaterStepper = leftBigger ? &left : &right;
-    greaterSign = leftBigger ? leftSign : rightSign;
-    lesserStepper = !leftBigger ? &left : &right;
-    lesserSign = !leftBigger ? leftSign : rightSign;
-
+    bool biggerIndex = abs(leftSteps) < abs(rightSteps);
 
     int sharedSteps = min(abs(leftSteps), abs(rightSteps));
+
     for (int i = 0; i < sharedSteps; i++) {
-      left.step(leftSign);
-      right.step(rightSign);
+      steppers[0]->step(signs[0]);
+      steppers[1]->step(signs[1]);
     }
 
     // Step separately for the remaining steps
     int stepsToGo = maxSteps - sharedSteps;
-    greaterStepper->step(stepsToGo * greaterSign);
+    steppers[biggerIndex]->step(stepsToGo * signs[biggerIndex]);
 
     // Old above
 
