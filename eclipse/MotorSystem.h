@@ -16,8 +16,8 @@ class MotorSystem {
     };
 
   private:
-  Stepper left;
-  Stepper right;
+  // left and right
+  Stepper steppers[2];
 
   // rotationsPerMinute 345 max
   static const int stepsPerRotation = 800;
@@ -27,8 +27,7 @@ class MotorSystem {
 
   // Physical parameters
   static const int enableMotorPin = 8;
-  static const double leftStepsPerInch = 331;
-  static const double rightStepsPerInch = 331;
+  const double stepsPerInch[2] = {331, 331};
 
   // For timing
   // Spaced like this so we don't overflow.
@@ -41,7 +40,7 @@ class MotorSystem {
   bool isActive = false;
 
   // String position in steps (represents inches though)
-  int lengths[2] = {8*leftStepsPerInch, 42.5*rightStepsPerInch};
+  int lengths[2] = {8*stepsPerInch[0], 42.5*stepsPerInch[1]};
 
   void enable() {
     assert(!isActive);
@@ -62,8 +61,8 @@ class MotorSystem {
   void inputToSteps(int* outSteps, double num1, double num2, Unit unit) {
     switch (unit) {
       case Unit::Inch:
-          outSteps[0] = floor(leftStepsPerInch * num1);
-          outSteps[1] = floor(rightStepsPerInch * num2);
+          outSteps[0] = floor(stepsPerInch[0] * num1);
+          outSteps[1] = floor(stepsPerInch[1] * num2);
           break;
       case Unit::Step:
           outSteps[0] = (int)num1;
@@ -73,8 +72,9 @@ class MotorSystem {
   }
 
   void setSpeed(long whatSpeed) {
-    left.setSpeed(whatSpeed);
-    right.setSpeed(whatSpeed);
+    for (auto& stepper : steppers) {
+      stepper.setSpeed(whatSpeed);
+    }
   }
 
   public:
@@ -84,8 +84,7 @@ class MotorSystem {
               const int leftPin2,
               const int rightPin1,
               const int rightPin2):
-    left(stepsPerRotation, leftPin1, leftPin2),
-    right(stepsPerRotation, rightPin1, rightPin2)
+    steppers{{stepsPerRotation, leftPin1, leftPin2}, {stepsPerRotation, rightPin1, rightPin2}}
     {
     }
 
@@ -99,11 +98,11 @@ class MotorSystem {
 
     enable();
 
-    left.step(initSteps);
-    right.step(initSteps);
+    steppers[0].step(initSteps);
+    steppers[1].step(initSteps);
 
-    left.step(-initSteps);
-    right.step(-initSteps);
+    steppers[0].step(-initSteps);
+    steppers[1].step(-initSteps);
 
     disable();
   }
@@ -123,12 +122,12 @@ class MotorSystem {
     enable();
 
     inputToSteps(outSteps, leftNum, rightNum, unit);
-    int leftSteps = outSteps[0];
-    int rightSteps = outSteps[1];
 
     // Notice the two signs are flipped.
-    int leftSign = signbit(leftSteps) ? 1 : -1;
-    int rightSign = signbit(rightSteps) ? -1 : 1;
+    int signs[2] = {
+      signbit(outSteps[0]) ? 1 : -1,
+      signbit(outSteps[1]) ? -1 : 1
+    };
     
 
     // /**
@@ -180,28 +179,28 @@ class MotorSystem {
     // Stepper *lesserStepper;
     // Stepper *greaterStepper;
 
-    Stepper *steppers[2] = {&left, &right};
-    int signs[2] = {leftSign, rightSign};
+    // int signs[2] = {leftSign, rightSign};
 
-    int maxSteps = max(abs(leftSteps), abs(rightSteps));
-    bool biggerIndex = abs(leftSteps) < abs(rightSteps);
+    int maxSteps = max(abs(outSteps[0]), abs(outSteps[1]));
+    int minSteps = min(abs(outSteps[0]), abs(outSteps[1]));
 
-    int sharedSteps = min(abs(leftSteps), abs(rightSteps));
+    bool biggerIndex = abs(outSteps[0]) < abs(outSteps[1]);
 
-    for (int i = 0; i < sharedSteps; i++) {
-      steppers[0]->step(signs[0]);
-      steppers[1]->step(signs[1]);
+
+    for (int i = 0; i < minSteps; i++) {
+      steppers[0].step(signs[0]);
+      steppers[1].step(signs[1]);
     }
 
     // Step separately for the remaining steps
-    int stepsToGo = maxSteps - sharedSteps;
-    steppers[biggerIndex]->step(stepsToGo * signs[biggerIndex]);
+    int stepsToGo = maxSteps - minSteps;
+    steppers[biggerIndex].step(stepsToGo * signs[biggerIndex]);
 
     // Old above
 
     // Track the stepping position
-    lengths[0] += leftSteps;
-    lengths[1] += rightSteps;
+    lengths[0] += outSteps[0];
+    lengths[1] += outSteps[1];
 
     disable();
   }
@@ -243,8 +242,8 @@ class MotorSystem {
 
     switch (unit) {
         case Unit::Inch:
-          pair[0] = lengths[0] / leftStepsPerInch;
-          pair[1] = lengths[1] / rightStepsPerInch;
+          pair[0] = lengths[0] / stepsPerInch[0];
+          pair[1] = lengths[1] / stepsPerInch[1];
           break;
         case Unit::Step:
           // TODO I'm sure there's a better way to write this.
