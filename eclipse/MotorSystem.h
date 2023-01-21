@@ -19,16 +19,24 @@ class MotorSystem {
   Stepper left;
   Stepper right;
 
-  // motorRPM 345 max
-  static const int numSteps = 800;
-  static const int maxMotorRPM = 345;
-  const int motorRPM = 220;
-  // static_assert(motorRPM <= maxMotorRPM);
+  // rotationsPerMinute 345 max
+  static const int stepsPerRotation = 800;
+  static const int maxRotationsPerMinute = 345;
+  static const int rotationsPerMinute = 220;
+  static_assert(rotationsPerMinute <= maxRotationsPerMinute);
 
   // Physical parameters
   static const int enableMotorPin = 8;
-  const double leftStepsPerInch = 331;
-  const double rightStepsPerInch = 331;
+  static const double leftStepsPerInch = 331;
+  static const double rightStepsPerInch = 331;
+
+  // For timing
+  // Spaced like this so we don't overflow.
+  // micro/sec * rot/step * min/rot * sec/min
+  // with current constants: 1E6 / 800 / 220 * 60
+  static const int secondsPerMinute = 60;
+  static const int microPerSecond = 1E6;
+  static const double microPerStep = (double)microPerSecond / (double)stepsPerRotation / (double)rotationsPerMinute * (double)secondsPerMinute;
 
   bool isActive = false;
 
@@ -76,8 +84,8 @@ class MotorSystem {
               const int leftPin2,
               const int rightPin1,
               const int rightPin2):
-    left(numSteps, leftPin1, leftPin2),
-    right(numSteps, rightPin1, rightPin2)
+    left(stepsPerRotation, leftPin1, leftPin2),
+    right(stepsPerRotation, rightPin1, rightPin2)
     {
     }
 
@@ -87,7 +95,7 @@ class MotorSystem {
 
     const int initSteps = 1;
     const int initDelay = 200;
-    setSpeed(motorRPM);
+    setSpeed(rotationsPerMinute);
 
     enable();
 
@@ -120,6 +128,52 @@ class MotorSystem {
 
     int leftSign = signbit(leftSteps) ? -1 : 1;
     int rightSign = signbit(rightSteps) ? -1 : 1;
+    
+
+    /**
+     * @brief New implementation: Allow the motors to finish at the same time.
+     * 
+     */
+
+    
+    int maxSteps = max(abs(leftSteps), abs(rightSteps));
+    int minSteps = min(abs(leftSteps), abs(rightSteps));
+    int expectedTime = microPerStep * maxSteps;
+
+    double slowMicroPerStep = expectedTime / minSteps;
+    
+    double highPace;
+    double lowPace;
+
+    int highStepsSoFar = 0;
+    int lowStepsSoFar = 0;
+    // TODO handle overflow
+    unsigned long startTime = micros();
+    unsigned long timeElapsed;
+
+    /**
+     * @brief Go through the timer and step when we're at or behind pace.
+     * 
+     */
+    // while (leftSteps > 0 || rightSteps > 0) {
+    //   // Time we expect to be by the time we take the next step.
+    //   highPace = microPerStep * highStepsSoFar;
+    //   lowPace = slowMicroPerStep * lowStepsSoFar;
+      
+    //   timeElapsed = micros() - startTime;
+
+    //   if (highPace < timeElapsed) {
+
+    //   }
+    // }
+    // const double stepsPerMicro = stepsPerMinute / microPerMinute;
+
+
+
+    /**
+     * @brief Old implementation: alternate steps then wrap up.
+     * 
+     */
 
     // Step together when the two motors can (one step per turn)
     int sharedSteps = min(abs(leftSteps), abs(rightSteps));
@@ -137,6 +191,7 @@ class MotorSystem {
       stepsToGo = abs(rightSteps) - sharedSteps;
       right.step(stepsToGo * rightSign);
     }
+    // Old above
 
     // Track the stepping position
     lengths[0] += leftSteps;
