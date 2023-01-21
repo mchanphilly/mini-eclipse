@@ -19,9 +19,14 @@ Parser parser;
 
 String string;
 
-void zero(double pair[2]) {
+void softZero(double pair[2]) {
   motors.getLengths(pair, MotorSystem::Unit::Inch);
-  blocker.zero(pair);
+  blocker.softZero(pair);
+}
+
+void hardZero(double pair[2]) {
+  motors.getLengths(pair, MotorSystem::Unit::Inch);
+  blocker.hardZero(pair);
 }
 
 void printPair(double pair[2]) {
@@ -71,11 +76,18 @@ void execute(Parser::Command command) {
       printPair(pair);
       break;
 
-    case Parser::CommandType::Zero:
+    case Parser::CommandType::SoftZero:
         // assert(num1 > 0);
         // assert(num2 > 0);
         motors.zero(num1, num2);
-        zero(pair);
+        softZero(pair);
+        break;
+
+    case Parser::CommandType::HardZero:
+        // assert(num1 > 0);
+        // assert(num2 > 0);
+        motors.zero(num1, num2);
+        hardZero(pair);
         break;
 
     case Parser::CommandType::Go:
@@ -102,8 +114,7 @@ void setup() {
   motors.init();
 
   double pair[2];
-  zero(pair);
-
+  hardZero(pair);
   printPair(pair);
 }
 

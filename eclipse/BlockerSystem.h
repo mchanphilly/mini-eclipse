@@ -32,6 +32,12 @@ class BlockerSystem {
         return offset;
     }
 
+    void getPositionFromLengths(double newPosition[2], double lengths[2]) {
+        double newOffset = findOffset(lengths);
+        newPosition[1] = newOffset - originOffset;
+        newPosition[0] = sqrt(sq(lengths[0]) - sq(newOffset));
+    }
+
     public:
     BlockerSystem() {}
 
@@ -55,9 +61,24 @@ class BlockerSystem {
         // pair = this->currentPosition;
     }
 
-    void zero(double lengths[2]) {
+    /**
+     * @brief Reset internal position to origin and all that entails.
+     * 
+     * @param lengths 
+     */
+    void hardZero(double lengths[2]) {
         memset(currentPosition, 0, sizeof(currentPosition));
         originOffset = findOffset(lengths);
+    }
+
+    /**
+     * @brief Reset internal position to reflect the physical system; the
+     * origin remains the same as before.
+     * 
+     * @param lengths 
+     */
+    void softZero(double lengths[2]) {
+        getPositionFromLengths(currentPosition, lengths);
     }
 };
 

@@ -18,7 +18,9 @@ class Parser {
             GetPosition,  // getpos (get x, y coordinates)
             Go, // go [x] [y]
             Shift, // shift [x] [y]
-            Zero, // setorigin [str1] [str2] (declare current position as (0, 0) with str lengths in inches)
+            
+            HardZero, // origin [str1] [str2] (declare current position as (0, 0) with str lengths in inches)
+            SoftZero, // fix [str1] [str2] (adjust str lengths and position to match; keeps old origin)
     };
     class Command {
         /**
@@ -55,7 +57,9 @@ class Parser {
         parseCase("getpos", GetPosition);
         parseCase("go", Go);
         parseCase("shift", Shift);
-        parseCase("zero", Zero);
+
+        parseCase("fix", SoftZero);
+        parseCase("origin", HardZero);
 
         // Shouldn't get here if we had a valid command.
         return CommandType::Invalid;
