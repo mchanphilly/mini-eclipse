@@ -13,13 +13,7 @@ const int stepYPin = 3;
 const int dirYPin = 6;
 const int enableMotorPin = 8;
 
-// motorRPM 345 max
-const int maxMotorRPM = 345;
-const int motorRPM = 220;
-static_assert(motorRPM <= maxMotorRPM);
-
 const int numSteps = 800;
-
 
 MotorSystem motors(numSteps, stepYPin, dirYPin, stepXPin, dirXPin);
 BlockerSystem blocker;
@@ -106,7 +100,6 @@ void execute(Parser::Command command) {
 
 void setup() {
   pinMode(enableMotorPin, OUTPUT);
-  motors.setSpeed(motorRPM);
   Serial.begin(9600);
   motors.init();
 
@@ -124,7 +117,4 @@ void loop() {
     auto command = parser.parse(string);
     execute(command);
   }
-
-  // motors.step(numSteps, numSteps);
-  // delay(3000);
 }

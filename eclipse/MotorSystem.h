@@ -19,6 +19,11 @@ class MotorSystem {
   Stepper left;
   Stepper right;
 
+  // motorRPM 345 max
+  const int maxMotorRPM = 345;
+  const int motorRPM = 220;
+  // static_assert(motorRPM <= maxMotorRPM);
+
   // Physical parameters
   static const int enableMotorPin = 8;
   const double leftStepsPerInch = 331;
@@ -58,6 +63,10 @@ class MotorSystem {
     }
   }
 
+  void setSpeed(long whatSpeed) {
+    left.setSpeed(whatSpeed);
+    right.setSpeed(whatSpeed);
+  }
 
   public:
 
@@ -78,6 +87,7 @@ class MotorSystem {
 
     const int initSteps = 1;
     const int initDelay = 200;
+    setSpeed(motorRPM);
 
     enable();
 
@@ -153,11 +163,6 @@ class MotorSystem {
     int rightToGo = desiredPosition[1] - lengths[1];
 
     step(leftToGo, rightToGo, Unit::Step);
-  }
-
-  void setSpeed(long whatSpeed) {
-    left.setSpeed(whatSpeed);
-    right.setSpeed(whatSpeed);
   }
 
   /**
