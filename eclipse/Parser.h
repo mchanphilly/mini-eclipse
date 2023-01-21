@@ -15,12 +15,10 @@ class Parser {
             GoInch,  // goinch [str1] [str2] ()
             ShiftInch,  // inch [str1] [str2] (moves the string by these inches)
 
-            Zero, // zero (sets current step counts to 0, 0)  (use in debugging only)
-
             GetPosition,  // getpos (get x, y coordinates)
             Go, // go [x] [y]
             Shift, // shift [x] [y]
-            Calibrate, // calibrate [str1] [str2] (declare current position as (0, 0) with str lengths)
+            Zero, // setorigin [str1] [str2] (declare current position as (0, 0) with str lengths in inches)
     };
     class Command {
         /**
@@ -32,10 +30,10 @@ class Parser {
         public:
 
         CommandType type;
-        float num1;
-        float num2;
+        double num1;
+        double num2;
 
-        Command(CommandType t, float n1, float n2) {
+        Command(CommandType t, double n1, double n2) {
             type = t;
             num1 = n1;
             num2 = n2;
@@ -46,19 +44,18 @@ class Parser {
     CommandType processType(String commandString) {
         #define parseCase(str, ct) if (commandString.equals(str)) {return CommandType::ct;}
 
-        parseCase("step", ShiftStep);
-        parseCase("gostep", GoStep);
-
-        parseCase("inch", ShiftInch);
-        parseCase("goinch", GoInch);
-
         parseCase("getstep", GetStep);
+        parseCase("gostep", GoStep);
+        parseCase("step", ShiftStep);
+
         parseCase("getinch", GetInch);
+        parseCase("goinch", GoInch);
+        parseCase("inch", ShiftInch);
 
-        parseCase("zero", Zero);
-
+        parseCase("getpos", GetPosition);
         parseCase("go", Go);
         parseCase("shift", Shift);
+        parseCase("zero", Zero);
 
         // Shouldn't get here if we had a valid command.
         return CommandType::Invalid;
@@ -98,8 +95,8 @@ class Parser {
         // Serial.println(commandString + "|" + intString1 + "|" + intString2);
 
         CommandType type = processType(commandString);
-        float number1 = intString1.toFloat();
-        float number2 = intString2.toFloat();
+        double number1 = intString1.toDouble();
+        double number2 = intString2.toDouble();
 
         // #ifdef DEBUG
         Serial.print((int)type);

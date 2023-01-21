@@ -21,13 +21,13 @@ class MotorSystem {
 
   // Physical parameters
   static const int enableMotorPin = 8;
-  const float leftStepsPerInch = 331;
-  const float rightStepsPerInch = 331;
+  const double leftStepsPerInch = 331;
+  const double rightStepsPerInch = 331;
 
   bool isActive = false;
 
-  // Step position
-  int steps[2] = {0};
+  // String position in steps (represents inches though)
+  int lengths[2] = {21*leftStepsPerInch, 25*rightStepsPerInch};
 
   void enable() {
     assert(!isActive);
@@ -45,7 +45,7 @@ class MotorSystem {
     isActive = false;
   }
 
-  void inputToSteps(int* outSteps, float num1, float num2, Unit unit) {
+  void inputToSteps(int* outSteps, double num1, double num2, Unit unit) {
     switch (unit) {
       case Unit::Inch:
           outSteps[0] = floor(leftStepsPerInch * num1);
@@ -98,7 +98,7 @@ class MotorSystem {
    * @param rightNum 
    * @param unit 
    */
-  void step(float leftNum, float rightNum, Unit unit) {
+  void step(double leftNum, double rightNum, Unit unit) {
     const int stepsPerStage = 1;
     int outSteps[2];
 
@@ -129,8 +129,8 @@ class MotorSystem {
     }
 
     // Track the stepping position
-    steps[0] += leftSteps;
-    steps[1] += rightSteps;
+    lengths[0] += leftSteps;
+    lengths[1] += rightSteps;
 
     disable();
   }
@@ -143,14 +143,14 @@ class MotorSystem {
    * @param rightNum 
    * @param unit 
    */
-  void go(float leftNum, float rightNum, Unit unit) {
+  void go(double leftNum, double rightNum, Unit unit) {
     // Converting to steps first
     int desiredPosition[2];
     inputToSteps(desiredPosition, leftNum, rightNum, unit);
 
     // See what we need to do to get there from where we are.
-    int leftToGo = desiredPosition[0] - steps[0];
-    int rightToGo = desiredPosition[1] - steps[1];
+    int leftToGo = desiredPosition[0] - lengths[0];
+    int rightToGo = desiredPosition[1] - lengths[1];
 
     step(leftToGo, rightToGo, Unit::Step);
   }
@@ -160,22 +160,30 @@ class MotorSystem {
     right.setSpeed(whatSpeed);
   }
 
-  void zero() {
-    memset(steps, 0, sizeof(steps));
+  /**
+   * @brief Reset the lengths of the strings (converts inches to steps)
+   * 
+   * @param leftLength 
+   * @param rightLength 
+   */
+  void zero(double leftLength, double rightLength) {
+    inputToSteps(lengths, leftLength, rightLength, Unit::Inch);
   }
 
-  void getStep(float pair[2], Unit unit) {
-    // Serial.println(steps[0]);
-    // Serial.println((int)pair);
+  void getLengths(double pair[2], Unit unit) {
+    // Serial.println("New lengths?");
+    // Serial.println(lengths[0]);
+    // Serial.println(lengths[1]);
+
     switch (unit) {
         case Unit::Inch:
-          pair[0] = steps[0] / leftStepsPerInch;
-          pair[1] = steps[1] / rightStepsPerInch;
+          pair[0] = lengths[0] / leftStepsPerInch;
+          pair[1] = lengths[1] / rightStepsPerInch;
           break;
         case Unit::Step:
           // TODO I'm sure there's a better way to write this.
-          pair[0] = steps[0];
-          pair[1] = steps[1];
+          pair[0] = lengths[0];
+          pair[1] = lengths[1];
           break;
     }
   }

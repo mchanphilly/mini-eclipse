@@ -21,16 +21,23 @@ static_assert(motorRPM <= maxMotorRPM);
 const int numSteps = 800;
 
 
-BlockerSystem blocker();
 MotorSystem motors(numSteps, stepYPin, dirYPin, stepXPin, dirXPin);
+BlockerSystem blocker;
 Parser parser;
 
 String string;
 
-void execute(Parser::Command command) {
-  float num1 = command.num1;
-  float num2 = command.num2;
+void printPair(double pair[2]) {
+  Serial.print(pair[0]);
+  Serial.print(",");
+  Serial.println(pair[1]);
+}
 
+void execute(Parser::Command command) {
+  double num1 = command.num1;
+  double num2 = command.num2;
+
+  double pair[2] = {num1, num2};
   // If only this was C++17 and not C++11
   // using enum Parser::CommandType;
 
@@ -50,10 +57,7 @@ void execute(Parser::Command command) {
   }
 
   switch (command.type) {
-    case Parser::CommandType::Zero:
-      motors.zero();  // TODO individual zeroing?
-      break;
-
+ 
     case Parser::CommandType::ShiftStep:
     case Parser::CommandType::ShiftInch:
       motors.step(num1, num2, unit);
@@ -66,12 +70,38 @@ void execute(Parser::Command command) {
 
     case Parser::CommandType::GetStep:
     case Parser::CommandType::GetInch:
-      float pair[2];
-      
-      motors.getStep(pair, unit);
-      Serial.print(pair[0]);
-      Serial.print(",");
-      Serial.println(pair[1]);
+      Serial.println("Get lengths");
+
+      motors.getLengths(pair, unit);
+      printPair(pair);
+      break;
+
+    case Parser::CommandType::Zero:
+        // assert(num1 > 0);
+        // assert(num2 > 0);
+        motors.zero(num1, num2);  // TODO individual zeroing?
+
+        motors.getLengths(pair, MotorSystem::Unit::Inch);
+
+        blocker.zero(pair);
+        Serial.print("Origin set to ");
+        printPair(pair);
+        break;
+
+    case Parser::CommandType::Go:
+        blocker.getLengthsFromPosition(pair, (double)num1, (double)num2);
+        motors.go(pair[0], pair[1], MotorSystem::Unit::Inch);
+        printPair(pair);
+        break;
+
+    case Parser::CommandType::GetPosition:
+        blocker.getPosition(pair);
+        printPair(pair);
+        break;
+
+
+    default:
+      Serial.println("Bad command");
       break;
   }
 }
