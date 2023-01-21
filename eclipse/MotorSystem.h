@@ -126,30 +126,31 @@ class MotorSystem {
     int leftSteps = outSteps[0];
     int rightSteps = outSteps[1];
 
-    int leftSign = signbit(leftSteps) ? -1 : 1;
+    // Notice the two signs are flipped.
+    int leftSign = signbit(leftSteps) ? 1 : -1;
     int rightSign = signbit(rightSteps) ? -1 : 1;
     
 
-    /**
-     * @brief New implementation: Allow the motors to finish at the same time.
-     * 
-     */
+    // /**
+    //  * @brief New implementation: Allow the motors to finish at the same time.
+    //  * 
+    //  */
 
     
-    int maxSteps = max(abs(leftSteps), abs(rightSteps));
-    int minSteps = min(abs(leftSteps), abs(rightSteps));
-    int expectedTime = microPerStep * maxSteps;
+    // int maxSteps = max(abs(leftSteps), abs(rightSteps));
+    // int minSteps = min(abs(leftSteps), abs(rightSteps));
+    // int expectedTime = microPerStep * maxSteps;
 
-    double slowMicroPerStep = expectedTime / minSteps;
+    // double slowMicroPerStep = expectedTime / minSteps;
     
-    double highPace;
-    double lowPace;
+    // double highPace;
+    // double lowPace;
 
-    int highStepsSoFar = 0;
-    int lowStepsSoFar = 0;
-    // TODO handle overflow
-    unsigned long startTime = micros();
-    unsigned long timeElapsed;
+    // int highStepsSoFar = 0;
+    // int lowStepsSoFar = 0;
+    // // TODO handle overflow
+    // unsigned long startTime = micros();
+    // unsigned long timeElapsed;
 
     /**
      * @brief Go through the timer and step when we're at or behind pace.
@@ -176,21 +177,30 @@ class MotorSystem {
      */
 
     // Step together when the two motors can (one step per turn)
+    Stepper *lesserStepper;
+    Stepper *greaterStepper;
+
+    int maxSteps = max(abs(leftSteps), abs(rightSteps));
+    bool leftBigger = abs(leftSteps) > abs(rightSteps);
+
+
+    int lesserSign, greaterSign;
+    greaterStepper = leftBigger ? &left : &right;
+    greaterSign = leftBigger ? leftSign : rightSign;
+    lesserStepper = !leftBigger ? &left : &right;
+    lesserSign = !leftBigger ? leftSign : rightSign;
+
+
     int sharedSteps = min(abs(leftSteps), abs(rightSteps));
     for (int i = 0; i < sharedSteps; i++) {
-      left.step(-leftSign);
+      left.step(leftSign);
       right.step(rightSign);
     }
 
     // Step separately for the remaining steps
-    int stepsToGo;
-    if (abs(leftSteps) > abs(rightSteps)) {
-      stepsToGo = abs(leftSteps) - sharedSteps;
-      left.step(-stepsToGo * leftSign);
-    } else {
-      stepsToGo = abs(rightSteps) - sharedSteps;
-      right.step(stepsToGo * rightSign);
-    }
+    int stepsToGo = maxSteps - sharedSteps;
+    greaterStepper->step(stepsToGo * greaterSign);
+
     // Old above
 
     // Track the stepping position
