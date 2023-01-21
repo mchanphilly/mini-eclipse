@@ -27,7 +27,7 @@ class MotorSystem {
   bool isActive = false;
 
   // String position in steps (represents inches though)
-  int lengths[2] = {21*leftStepsPerInch, 25*rightStepsPerInch};
+  int lengths[2] = {8*leftStepsPerInch, 42*rightStepsPerInch};
 
   void enable() {
     assert(!isActive);

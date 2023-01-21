@@ -27,6 +27,11 @@ Parser parser;
 
 String string;
 
+void zero(double pair[2]) {
+  motors.getLengths(pair, MotorSystem::Unit::Inch);
+  blocker.zero(pair);
+}
+
 void printPair(double pair[2]) {
   Serial.print(pair[0]);
   Serial.print(",");
@@ -70,8 +75,6 @@ void execute(Parser::Command command) {
 
     case Parser::CommandType::GetStep:
     case Parser::CommandType::GetInch:
-      Serial.println("Get lengths");
-
       motors.getLengths(pair, unit);
       printPair(pair);
       break;
@@ -79,13 +82,8 @@ void execute(Parser::Command command) {
     case Parser::CommandType::Zero:
         // assert(num1 > 0);
         // assert(num2 > 0);
-        motors.zero(num1, num2);  // TODO individual zeroing?
-
-        motors.getLengths(pair, MotorSystem::Unit::Inch);
-
-        blocker.zero(pair);
-        Serial.print("Origin set to ");
-        printPair(pair);
+        motors.zero(num1, num2);
+        zero(pair);
         break;
 
     case Parser::CommandType::Go:
@@ -111,6 +109,11 @@ void setup() {
   motors.setSpeed(motorRPM);
   Serial.begin(9600);
   motors.init();
+
+  double pair[2];
+  zero(pair);
+
+  printPair(pair);
 }
 
 void loop() {

@@ -22,10 +22,6 @@ class BlockerSystem {
      * @return double 
      */
     double findOffset(double lengths[2]) {        
-        Serial.println("Lengths in Offset:");
-        Serial.println(lengths[0]);
-        Serial.println(lengths[1]);
-
         double semiPerimeter = (lengths[0] + lengths[1] + width) / 2;
         double area = sqrt(semiPerimeter *
                            (semiPerimeter - lengths[0]) *
@@ -54,7 +50,9 @@ class BlockerSystem {
     }
 
     void getPosition(double pair[2]) {
-        pair = this->currentPosition;
+        pair[0] = currentPosition[0];
+        pair[1] = currentPosition[1];
+        // pair = this->currentPosition;
     }
 
     void zero(double lengths[2]) {
