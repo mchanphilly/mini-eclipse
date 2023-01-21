@@ -20,7 +20,8 @@ class MotorSystem {
   Stepper right;
 
   // motorRPM 345 max
-  const int maxMotorRPM = 345;
+  static const int numSteps = 800;
+  static const int maxMotorRPM = 345;
   const int motorRPM = 220;
   // static_assert(motorRPM <= maxMotorRPM);
 
@@ -32,7 +33,7 @@ class MotorSystem {
   bool isActive = false;
 
   // String position in steps (represents inches though)
-  int lengths[2] = {8*leftStepsPerInch, 42*rightStepsPerInch};
+  int lengths[2] = {8*leftStepsPerInch, 42.5*rightStepsPerInch};
 
   void enable() {
     assert(!isActive);
@@ -71,7 +72,6 @@ class MotorSystem {
   public:
 
   MotorSystem(
-              const int numSteps,
               const int leftPin1,
               const int leftPin2,
               const int rightPin1,

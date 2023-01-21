@@ -13,9 +13,7 @@ const int stepYPin = 3;
 const int dirYPin = 6;
 const int enableMotorPin = 8;
 
-const int numSteps = 800;
-
-MotorSystem motors(numSteps, stepYPin, dirYPin, stepXPin, dirXPin);
+MotorSystem motors(stepYPin, dirYPin, stepXPin, dirXPin);
 BlockerSystem blocker;
 Parser parser;
 
