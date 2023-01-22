@@ -22,7 +22,7 @@ class MotorSystem {
   // rotationsPerMinute 345 max
   static constexpr int stepsPerRotation = 800;
   static constexpr int maxRotationsPerMinute = 345;
-  static constexpr int rotationsPerMinute = 220;
+  static constexpr int rotationsPerMinute = 300;
   static_assert(rotationsPerMinute <= maxRotationsPerMinute);
 
   // Physical parameters
@@ -124,6 +124,8 @@ class MotorSystem {
     enable();
 
     inputToSteps(outSteps, leftNum, rightNum, unit);
+    lengths[0] += outSteps[0];
+    lengths[1] += outSteps[1];
 
     // Notice the two signs are flipped.
     int signs[2] = {
@@ -165,27 +167,36 @@ class MotorSystem {
      * @brief Old implementation: alternate steps then wrap up.
      * 
      */
-    int maxSteps = max(abs(outSteps[0]), abs(outSteps[1]));
-    int minSteps = min(abs(outSteps[0]), abs(outSteps[1]));
+    const int maxSteps = max(abs(outSteps[0]), abs(outSteps[1]));
+    const int minSteps = min(abs(outSteps[0]), abs(outSteps[1]));
 
-    bool biggerIndex = abs(outSteps[0]) < abs(outSteps[1]);
+    const bool biggerIndex = abs(outSteps[0]) < abs(outSteps[1]);
 
 
-    for (int i = 0; i < minSteps; i++) {
-      steppers[0].step(signs[0]);
-      steppers[1].step(signs[1]);
+    unsigned long maxTime = maxSteps * microsPerStep;
+    unsigned long microsPerSmall = maxTime / minSteps;
+
+    // Here we'll have the paces match the steppers (left and right)
+    unsigned long paces[2] = {0};
+    int stepsLeft[2] = {abs(outSteps[0]), abs(outSteps[1])};
+    
+    auto startTime = micros();
+    while (stepsLeft[0] || stepsLeft[1]) {
+        auto timeSoFar = micros() - startTime;
+        // Serial.println(timeSoFar);
+        
+        if (timeSoFar > paces[biggerIndex] && stepsLeft[biggerIndex]) {
+          paces[biggerIndex] += microsPerStep;
+          stepsLeft[biggerIndex]--;
+          steppers[biggerIndex].step(signs[biggerIndex]);
+        }
+
+        if (timeSoFar > paces[!biggerIndex] && stepsLeft[!biggerIndex]) {
+          paces[!biggerIndex] += microsPerSmall;
+          stepsLeft[!biggerIndex]--;
+          steppers[!biggerIndex].step(signs[!biggerIndex]);
+        }
     }
-
-    // Step separately for the remaining steps
-    int stepsToGo = maxSteps - minSteps;
-    steppers[biggerIndex].step(stepsToGo * signs[biggerIndex]);
-
-    // Old above
-
-    // Track the stepping position
-    lengths[0] += outSteps[0];
-    lengths[1] += outSteps[1];
-
     disable();
   }
 
