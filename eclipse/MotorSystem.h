@@ -20,22 +20,24 @@ class MotorSystem {
   Stepper steppers[2];
 
   // rotationsPerMinute 345 max
-  static const int stepsPerRotation = 800;
-  static const int maxRotationsPerMinute = 345;
-  static const int rotationsPerMinute = 220;
+  static constexpr int stepsPerRotation = 800;
+  static constexpr int maxRotationsPerMinute = 345;
+  static constexpr int rotationsPerMinute = 220;
   static_assert(rotationsPerMinute <= maxRotationsPerMinute);
 
   // Physical parameters
-  static const int enableMotorPin = 8;
+  static constexpr int enableMotorPin = 8;
   const double stepsPerInch[2] = {331, 331};
 
-  // For timing
-  // Spaced like this so we don't overflow.
-  // micro/sec * rot/step * min/rot * sec/min
-  // with current constants: 1E6 / 800 / 220 * 60
-  static const int secondsPerMinute = 60;
-  static const int microPerSecond = 1E6;
-  static const double microPerStep = (double)microPerSecond / (double)stepsPerRotation / (double)rotationsPerMinute * (double)secondsPerMinute;
+
+  static constexpr int microsPerSecond = 1e6;
+  static constexpr int secondsPerMin = 60;
+
+  // Precomputing the constant since 1E6 is beyond what we can operate on
+  // micro/step = micro/sec * sec/min * min/rot * rot/step
+  //              1E6       * 60      * 1/800   / steps/rot
+  static constexpr double microsPerStepMultiplier = 75e3;
+  static constexpr double microsPerStep = microsPerStepMultiplier / rotationsPerMinute;
 
   bool isActive = false;
 
@@ -134,17 +136,6 @@ class MotorSystem {
     //  * @brief New implementation: Allow the motors to finish at the same time.
     //  * 
     //  */
-
-    
-    // int maxSteps = max(abs(leftSteps), abs(rightSteps));
-    // int minSteps = min(abs(leftSteps), abs(rightSteps));
-    // int expectedTime = microPerStep * maxSteps;
-
-    // double slowMicroPerStep = expectedTime / minSteps;
-    
-    // double highPace;
-    // double lowPace;
-
     // int highStepsSoFar = 0;
     // int lowStepsSoFar = 0;
     // // TODO handle overflow
@@ -174,13 +165,6 @@ class MotorSystem {
      * @brief Old implementation: alternate steps then wrap up.
      * 
      */
-
-    // Step together when the two motors can (one step per turn)
-    // Stepper *lesserStepper;
-    // Stepper *greaterStepper;
-
-    // int signs[2] = {leftSign, rightSign};
-
     int maxSteps = max(abs(outSteps[0]), abs(outSteps[1]));
     int minSteps = min(abs(outSteps[0]), abs(outSteps[1]));
 
