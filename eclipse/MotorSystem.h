@@ -118,23 +118,21 @@ class MotorSystem {
    * @param unit 
    */
   void step(double leftNum, double rightNum, Unit unit) {
-    const int stepsPerStage = 1;
-    int outSteps[2];
-
     enable();
 
+    int outSteps[2];
     inputToSteps(outSteps, leftNum, rightNum, unit);
-    int stepsLeft[2] = {abs(outSteps[0]), abs(outSteps[1])};
     lengths[0] += outSteps[0];
     lengths[1] += outSteps[1];
 
-    // Notice the two signs are flipped.
-    int signs[2] = {
+    // Notice the two signs are flipped according to how the string is spooled.
+    const int signs[2] = {
       signbit(outSteps[0]) ? 1 : -1,
       signbit(outSteps[1]) ? -1 : 1
     };
     
     const bool biggerIndex = abs(outSteps[0]) < abs(outSteps[1]);
+    int stepsLeft[2] = {abs(outSteps[0]), abs(outSteps[1])};
 
     const unsigned long maxTime = stepsLeft[biggerIndex] * microsPerStep;
     const unsigned long microsPerSmall = maxTime / stepsLeft[!biggerIndex];
@@ -142,31 +140,18 @@ class MotorSystem {
     timesPerStep[biggerIndex] = microsPerStep;
     timesPerStep[!biggerIndex] = microsPerSmall;
 
-    Serial.println("Time");
-    Serial.println(maxTime);
-    Serial.println(outSteps[!biggerIndex]);
-    Serial.println(microsPerSmall);
-
     // Here we'll have the paces match the steppers (left and right)
     unsigned long paces[2] = {0};
     
     auto startTime = micros();
     while (stepsLeft[0] || stepsLeft[1]) {
         auto timeSoFar = micros() - startTime;
-        // Serial.println("NEXT");
-        // Serial.println(timesPerStep[0]);
-        // Serial.println(timesPerStep[1]);
-        
-        if (timeSoFar > paces[biggerIndex] && stepsLeft[biggerIndex]) {
-          paces[biggerIndex] += timesPerStep[biggerIndex];
-          stepsLeft[biggerIndex]--;
-          steppers[biggerIndex].step(signs[biggerIndex]);
-        }
-
-        if (timeSoFar > paces[!biggerIndex] && stepsLeft[!biggerIndex]) {
-          paces[!biggerIndex] += timesPerStep[!biggerIndex];
-          stepsLeft[!biggerIndex]--;
-          steppers[!biggerIndex].step(signs[!biggerIndex]);
+        for (int i = 0; i < 2; i++) {
+          if (timeSoFar > paces[i] && stepsLeft[i]) {
+            paces[i] += timesPerStep[i];
+            stepsLeft[i]--;
+            steppers[i].step(signs[i]);
+          }
         }
     }
     disable();
