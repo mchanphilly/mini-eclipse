@@ -18,17 +18,20 @@ class MotorSystem {
   private:
   // left and right
   Stepper steppers[2];
+  bool isActive = false;
 
-  // rotationsPerMinute 345 max
+  // Parameters of the stepper motors.
+  static constexpr int enableMotorPin = 8;
   static constexpr int stepsPerRotation = 800;
   static constexpr int maxRotationsPerMinute = 345;
+
+  // User sets this.
   static constexpr int rotationsPerMinute = 300;
   static_assert(rotationsPerMinute <= maxRotationsPerMinute);
 
-  // Physical parameters
-  static constexpr int enableMotorPin = 8;
+  // Parameters of the string set-up (including initial conditions)
+  const double startingPoint[2] = {8, 42.5};
   const double stepsPerInch[2] = {331, 331};
-
 
   static constexpr int microsPerSecond = 1e6;
   static constexpr int secondsPerMin = 60;
@@ -39,11 +42,9 @@ class MotorSystem {
   static constexpr double microsPerStepMultiplier = 75e3;
   static constexpr double microsPerStep = microsPerStepMultiplier / rotationsPerMinute;
 
-  bool isActive = false;
-
   // String position in steps (represents inches though)
-  int lengths[2] = {8*stepsPerInch[0], 42.5*stepsPerInch[1]};
-
+  int lengths[2] = {startingPoint[0]*stepsPerInch[0], startingPoint[1]*stepsPerInch[1]};
+  
   void enable() {
     assert(!isActive);
     digitalWrite(enableMotorPin, LOW);
@@ -93,9 +94,7 @@ class MotorSystem {
   void init() {
     // "Warms up" the motors so that the first
     // movements aren't duds.
-
-    const int initSteps = 1;
-    const int initDelay = 200;
+    constexpr int initSteps = 1;
     setSpeed(rotationsPerMinute);
 
     enable();
