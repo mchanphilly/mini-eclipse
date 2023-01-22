@@ -124,6 +124,7 @@ class MotorSystem {
     enable();
 
     inputToSteps(outSteps, leftNum, rightNum, unit);
+    int stepsLeft[2] = {abs(outSteps[0]), abs(outSteps[1])};
     lengths[0] += outSteps[0];
     lengths[1] += outSteps[1];
 
@@ -133,66 +134,37 @@ class MotorSystem {
       signbit(outSteps[1]) ? -1 : 1
     };
     
-
-    // /**
-    //  * @brief New implementation: Allow the motors to finish at the same time.
-    //  * 
-    //  */
-    // int highStepsSoFar = 0;
-    // int lowStepsSoFar = 0;
-    // // TODO handle overflow
-    // unsigned long startTime = micros();
-    // unsigned long timeElapsed;
-
-    /**
-     * @brief Go through the timer and step when we're at or behind pace.
-     * 
-     */
-    // while (leftSteps > 0 || rightSteps > 0) {
-    //   // Time we expect to be by the time we take the next step.
-    //   highPace = microPerStep * highStepsSoFar;
-    //   lowPace = slowMicroPerStep * lowStepsSoFar;
-      
-    //   timeElapsed = micros() - startTime;
-
-    //   if (highPace < timeElapsed) {
-
-    //   }
-    // }
-    // const double stepsPerMicro = stepsPerMinute / microPerMinute;
-
-
-
-    /**
-     * @brief Old implementation: alternate steps then wrap up.
-     * 
-     */
-    const int maxSteps = max(abs(outSteps[0]), abs(outSteps[1]));
-    const int minSteps = min(abs(outSteps[0]), abs(outSteps[1]));
-
     const bool biggerIndex = abs(outSteps[0]) < abs(outSteps[1]);
 
+    const unsigned long maxTime = stepsLeft[biggerIndex] * microsPerStep;
+    const unsigned long microsPerSmall = maxTime / stepsLeft[!biggerIndex];
+    unsigned long timesPerStep[2];
+    timesPerStep[biggerIndex] = microsPerStep;
+    timesPerStep[!biggerIndex] = microsPerSmall;
 
-    unsigned long maxTime = maxSteps * microsPerStep;
-    unsigned long microsPerSmall = maxTime / minSteps;
+    Serial.println("Time");
+    Serial.println(maxTime);
+    Serial.println(outSteps[!biggerIndex]);
+    Serial.println(microsPerSmall);
 
     // Here we'll have the paces match the steppers (left and right)
     unsigned long paces[2] = {0};
-    int stepsLeft[2] = {abs(outSteps[0]), abs(outSteps[1])};
     
     auto startTime = micros();
     while (stepsLeft[0] || stepsLeft[1]) {
         auto timeSoFar = micros() - startTime;
-        // Serial.println(timeSoFar);
+        // Serial.println("NEXT");
+        // Serial.println(timesPerStep[0]);
+        // Serial.println(timesPerStep[1]);
         
         if (timeSoFar > paces[biggerIndex] && stepsLeft[biggerIndex]) {
-          paces[biggerIndex] += microsPerStep;
+          paces[biggerIndex] += timesPerStep[biggerIndex];
           stepsLeft[biggerIndex]--;
           steppers[biggerIndex].step(signs[biggerIndex]);
         }
 
         if (timeSoFar > paces[!biggerIndex] && stepsLeft[!biggerIndex]) {
-          paces[!biggerIndex] += microsPerSmall;
+          paces[!biggerIndex] += timesPerStep[!biggerIndex];
           stepsLeft[!biggerIndex]--;
           steppers[!biggerIndex].step(signs[!biggerIndex]);
         }
