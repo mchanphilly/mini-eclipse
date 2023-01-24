@@ -24,15 +24,16 @@ class MotorSystem {
   static constexpr int enableMotorPin = 8;
   static constexpr int stepsPerRotation = 800;
   static constexpr int maxRotationsPerMinute = 345;
+  static constexpr double stepRadius = (double)stepsPerRotation / (2*PI);
 
   // User sets this.
   static constexpr int rotationsPerMinute = 300;
   static_assert(rotationsPerMinute <= maxRotationsPerMinute);
 
   // Parameters of the string set-up (including initial conditions)
-  const double startingPoint[2] = {8, 42.5};
-  const double stepsPerInch[2] = {331, 331};
+  static constexpr double stepsPerInch = 331;
 
+  // Unit constants
   static constexpr int microsPerSecond = 1e6;
   static constexpr int secondsPerMin = 60;
 
@@ -42,9 +43,9 @@ class MotorSystem {
   static constexpr double microsPerStepMultiplier = 75e3;
   static constexpr double microsPerStep = microsPerStepMultiplier / rotationsPerMinute;
 
-  // String position in steps (represents inches though)
-  int lengths[2] = {startingPoint[0]*stepsPerInch[0], startingPoint[1]*stepsPerInch[1]};
-  
+  // String position in steps offset from the horizontal position, not tangential or radial length.
+  int lengths[2];
+
   void enable() {
     assert(!isActive);
     digitalWrite(enableMotorPin, LOW);
@@ -64,8 +65,8 @@ class MotorSystem {
   void inputToSteps(int* outSteps, double num1, double num2, Unit unit) {
     switch (unit) {
       case Unit::Inch:
-          outSteps[0] = floor(stepsPerInch[0] * num1);
-          outSteps[1] = floor(stepsPerInch[1] * num2);
+          outSteps[0] = floor(stepsPerInch * num1);
+          outSteps[1] = floor(stepsPerInch * num2);
           break;
       case Unit::Step:
           outSteps[0] = (int)num1;
@@ -81,6 +82,7 @@ class MotorSystem {
   }
 
   public:
+  static constexpr double inchRadius = stepRadius / stepsPerInch;
 
   MotorSystem(
               const int leftPin1,
@@ -177,7 +179,7 @@ class MotorSystem {
   }
 
   /**
-   * @brief Reset the lengths of the strings (converts inches to steps)
+   * @brief Reset the lengths of the strings from tangent to spool (converts inches to steps)
    * 
    * @param leftLength 
    * @param rightLength 
@@ -193,8 +195,8 @@ class MotorSystem {
 
     switch (unit) {
         case Unit::Inch:
-          pair[0] = lengths[0] / stepsPerInch[0];
-          pair[1] = lengths[1] / stepsPerInch[1];
+          pair[0] = lengths[0] / stepsPerInch;
+          pair[1] = lengths[1] / stepsPerInch;
           break;
         case Unit::Step:
           // TODO I'm sure there's a better way to write this.

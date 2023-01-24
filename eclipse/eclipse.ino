@@ -13,6 +13,8 @@ const int stepYPin = 3;
 const int dirYPin = 6;
 const int enableMotorPin = 8;
 
+const double initialTangential[2] = {8, 42};
+
 MotorSystem motors(stepYPin, dirYPin, stepXPin, dirXPin);
 BlockerSystem blocker;
 Parser parser;
@@ -25,11 +27,23 @@ void printPair(double pair[2]) {
   Serial.println(pair[1]);
 }
 
+// Input tangentials
+void zeroMotorsFromTangentials(const double tangential[2]) {
+  // Blocker zeros on tangentials
+  double lengths[2];
+  blocker.getLengthsFromTangential(lengths, tangential);
+
+  // Motors zero on true lengths.
+  motors.zero(lengths[0], lengths[1]);
+  printPair(lengths);
+}
+
 void execute(Parser::Command command) {
   double num1 = command.num1;
   double num2 = command.num2;
 
   double pair[2] = {num1, num2};
+  double lengths[2];
   // If only this was C++17 and not C++11
   // using enum Parser::CommandType;
 
@@ -61,35 +75,40 @@ void execute(Parser::Command command) {
       break;
 
     case Parser::CommandType::GetStep:
+      // Note that this includes the arc.
+      motors.getLengths(lengths, unit);
+      printPair(lengths);
+      break;
+
     case Parser::CommandType::GetInch:
-      motors.getLengths(pair, unit);
-      printPair(pair);
+      // Note that this does NOT include the arc
+      blocker.getTangential(lengths);
+      printPair(lengths);
       break;
 
     case Parser::CommandType::SoftZero:
-        // assert(num1 > 0);
-        // assert(num2 > 0);
-        motors.zero(num1, num2);
         blocker.softZero(pair);
+        zeroMotorsFromTangentials(pair);
         break;
 
     case Parser::CommandType::HardZero:
-        // assert(num1 > 0);
-        // assert(num2 > 0);
-        motors.zero(num1, num2);
         blocker.hardZero(pair);
+        zeroMotorsFromTangentials(pair);
         break;
 
     case Parser::CommandType::Go:
-        blocker.getLengthsFromPosition(pair, (double)num1, (double)num2);
-        motors.go(pair[0], pair[1], MotorSystem::Unit::Inch);
-        printPair(pair);
+        blocker.getLengthsFromPosition(lengths, pair);
+        motors.go(lengths[0], lengths[1], MotorSystem::Unit::Inch);
+        
+        blocker.setPosition(pair);
         break;
 
     case Parser::CommandType::GetPosition:
         blocker.getPosition(pair);
         printPair(pair);
         break;
+
+    
 
 
     default:
@@ -103,10 +122,8 @@ void setup() {
   Serial.begin(9600);
   motors.init();
 
-  double lengths[2];
-  motors.getLengths(lengths, MotorSystem::Unit::Inch);
-  blocker.hardZero(lengths);
-  printPair(lengths);
+  blocker.hardZero(initialTangential);
+  zeroMotorsFromTangentials(initialTangential);
 }
 
 void loop() {
