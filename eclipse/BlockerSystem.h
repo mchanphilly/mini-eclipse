@@ -194,6 +194,7 @@ class BlockerSystem {
     void setPosition(const double pair[2]) {
         currentPosition[0] = pair[0];
         currentPosition[1] = pair[1];
+        printBlockerPair("Set position to", pair);
     }
 
     // Gets the estimates for tangentials

@@ -22,16 +22,18 @@ class MotorSystem {
 
   // Parameters of the stepper motors.
   static constexpr int enableMotorPin = 8;
-  static constexpr int stepsPerRotation = 800;
-  static constexpr int maxRotationsPerMinute = 345;
+  static constexpr int stepsInMotor = 200;
+  static constexpr int stepsPerRotation = stepsInMotor * 128;  // Account for microsteps
+  static constexpr int maxRotationsPerMinute = 500;
   static constexpr double stepRadius = (double)stepsPerRotation / (2*PI);
 
   // User sets this.
-  static constexpr int rotationsPerMinute = 300;
-  static_assert(rotationsPerMinute <= maxRotationsPerMinute);
+  static constexpr int rotationsPerMinute = 500 * 2;  // Workaround because we can't set steps in the Stepper to be bigger than fits in int.
+  static_assert(rotationsPerMinute <= maxRotationsPerMinute * 2);
 
   // Parameters of the string set-up (including initial conditions)
-  static constexpr double stepsPerInch = 331;
+  static constexpr double inchPerRotation = 2.4169 * 4;
+  static constexpr double stepsPerInch = stepsPerRotation / inchPerRotation;
 
   // Unit constants
   static constexpr int microsPerSecond = 1e6;
@@ -44,7 +46,7 @@ class MotorSystem {
   static constexpr double microsPerStep = microsPerStepMultiplier / rotationsPerMinute;
 
   // String position in steps offset from the horizontal position, not tangential or radial length.
-  int lengths[2];
+  long int lengths[2];
 
   void enable() {
     assert(!isActive);
@@ -62,15 +64,15 @@ class MotorSystem {
     isActive = false;
   }
 
-  void inputToSteps(int* outSteps, double num1, double num2, Unit unit) {
+  void inputToSteps(long* outSteps, double num1, double num2, Unit unit) {
     switch (unit) {
       case Unit::Inch:
-          outSteps[0] = floor(stepsPerInch * num1);
-          outSteps[1] = floor(stepsPerInch * num2);
+          outSteps[0] = lround(stepsPerInch * num1);
+          outSteps[1] = lround(stepsPerInch * num2);
           break;
       case Unit::Step:
-          outSteps[0] = (int)num1;
-          outSteps[1] = (int)num2;
+          outSteps[0] = (long)num1;
+          outSteps[1] = (long)num2;
           break;
     }
   }
@@ -121,19 +123,19 @@ class MotorSystem {
   void step(double leftNum, double rightNum, Unit unit) {
     enable();
 
-    int outSteps[2];
+    long outSteps[2];
     inputToSteps(outSteps, leftNum, rightNum, unit);
     lengths[0] += outSteps[0];
     lengths[1] += outSteps[1];
 
     // Notice the two signs are flipped according to how the string is spooled.
     const int signs[2] = {
-      signbit(outSteps[0]) ? 1 : -1,
-      signbit(outSteps[1]) ? -1 : 1
+      signbit(outSteps[0]) ? -1 : 1,
+      signbit(outSteps[1]) ? 1 : -1
     };
     
     const bool biggerIndex = abs(outSteps[0]) < abs(outSteps[1]);
-    int stepsLeft[2] = {abs(outSteps[0]), abs(outSteps[1])};
+    long stepsLeft[2] = {abs(outSteps[0]), abs(outSteps[1])};
 
     const unsigned long maxTime = stepsLeft[biggerIndex] * microsPerStep;
     const unsigned long microsPerSmall = maxTime / stepsLeft[!biggerIndex];
@@ -168,12 +170,12 @@ class MotorSystem {
    */
   void go(double leftNum, double rightNum, Unit unit) {
     // Converting to steps first
-    int desiredPosition[2];
+    long desiredPosition[2];
     inputToSteps(desiredPosition, leftNum, rightNum, unit);
 
     // See what we need to do to get there from where we are.
-    int leftToGo = desiredPosition[0] - lengths[0];
-    int rightToGo = desiredPosition[1] - lengths[1];
+    long leftToGo = desiredPosition[0] - lengths[0];
+    long rightToGo = desiredPosition[1] - lengths[1];
 
     step(leftToGo, rightToGo, Unit::Step);
   }
