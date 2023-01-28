@@ -134,4 +134,6 @@ void loop() {
     auto command = parser.parse(string);
     execute(command);
   }
+
+  motors.run();
 }
