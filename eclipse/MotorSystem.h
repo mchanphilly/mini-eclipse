@@ -31,37 +31,19 @@ class MotorSystem {
   static constexpr double maxRotationsPerSecond = maxRotationsPerMinute / secondsPerMinute;
   static constexpr double maxStepsPerSecond = maxRotationsPerSecond * stepsPerRotation;
 
-  static constexpr double rotationsPerMinute = 240;
+  static constexpr double rotationsPerMinute = 320;
   static_assert(rotationsPerMinute <= maxRotationsPerMinute);
   static constexpr double rotationsPerSecond = rotationsPerMinute / secondsPerMinute;
 
   static constexpr double stepsPerSecond = rotationsPerSecond * stepsPerRotation;
 
   // Parameters of the stepper motors.
-  // static constexpr int enableMotorPin = 8;
-  // static constexpr int stepsInMotor = 200;
-  // static constexpr int stepsPerRotation = stepsInMotor * 128;  // Account for microsteps
-  // static constexpr int maxRotationsPerMinute = 500;
+
   static constexpr double stepRadius = (double)stepsPerRotation / (2*PI);
 
-  // // User sets this.
-  // static constexpr int rotationsPerMinute = 500 * 2;  // Workaround because we can't set steps in the Stepper to be bigger than fits in int.
-  // static_assert(rotationsPerMinute <= maxRotationsPerMinute * 2);
-
   // // Parameters of the string set-up (including initial conditions)
-  // static constexpr double inchPerRotation = 2.4169;
   static constexpr double inchPerRotation = 2.37578;
   static constexpr double stepsPerInch = stepsPerRotation / inchPerRotation;
-
-  // // Unit constants
-  // static constexpr int microsPerSecond = 1e6;
-  // static constexpr int secondsPerMin = 60;
-
-  // Precomputing the constant since 1E6 is beyond what we can operate on
-  // micro/step = micro/sec * sec/min * min/rot * rot/step
-  //              1E6       * 60      * 1/800   / steps/rot
-  // static constexpr double microsPerStepMultiplier = 75e3;
-  // static constexpr double microsPerStep = microsPerStepMultiplier / rotationsPerMinute;
 
   // String position in steps offset from the horizontal position, not tangential or radial length.
   long int lengths[2];
@@ -122,11 +104,7 @@ class MotorSystem {
       stepper.setPinsInverted(false, false, true);
       stepper.setEnablePin(enableMotorPin);
       stepper.setMaxSpeed(maxStepsPerSecond);
-      // stepper.setAcceleration(1);
     }
-
-
-    // steppers[0].setSpeed(stepsPerSecond);
 
     disable();
   }
@@ -146,16 +124,6 @@ class MotorSystem {
     inputToSteps(outSteps, leftNum, rightNum, unit);
     lengths[0] += outSteps[0];
     lengths[1] += outSteps[1];
-
-    // Notice the two signs are flipped according to how the string is spooled.
-    const int signs[2] = {
-      signbit(outSteps[0]) ? -1 : 1,
-      signbit(outSteps[1]) ? 1 : -1
-    };
-    
-    const bool biggerIndex = abs(outSteps[0]) < abs(outSteps[1]);
-    long stepsLeft[2] = {abs(outSteps[0]), abs(outSteps[1])};
-    Serial.println(outSteps[0]);
 
     steppers[0].move(outSteps[0]);
     steppers[0].setSpeed(stepsPerSecond);
