@@ -1,6 +1,8 @@
 #ifndef SunModel_h
 #define SunModel_h
 
+#include <Arduino.h>
+
 class SunModel {
 public:
     struct Location {

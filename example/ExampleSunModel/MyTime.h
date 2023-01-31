@@ -1,6 +1,7 @@
 #ifndef MyTime_h
 #define MyTime_h
 
+#include <Arduino.h>
 #include <TimeLib.h>
 
 class MyTime : public Printable {
@@ -16,7 +17,8 @@ public:
 
     const time_t unixTime;
 private:
-    time_t listToUnix(int year, int month, int day, int hour, int minute, int utcOffset=0) const;
+    const time_t listToUnix(int year, int month, int day, int hour, int minute, int utcOffset=0);
+    const time_t stringToUnix(String timeString);
 };
 
 #endif

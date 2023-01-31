@@ -1,7 +1,10 @@
 #include "SunModel.h"
 
+#include <Arduino.h>
 #include <SolarCalculator.h>
-#include "MyTime.h"
+
+// #include "MyTime.h"
+typedef unsigned long time_t;
 
 void SunModel::Location::print() const {
     printPair("Location", latitude, longitude);
