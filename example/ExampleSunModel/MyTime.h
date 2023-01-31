@@ -16,7 +16,7 @@ public:
 
     const time_t unixTime;
 private:
-    time_t listToUnix(int year, int month, int day, int hour, int minute, int utcOffset=0);
+    time_t listToUnix(int year, int month, int day, int hour, int minute, int utcOffset=0) const;
 };
 
 #endif
