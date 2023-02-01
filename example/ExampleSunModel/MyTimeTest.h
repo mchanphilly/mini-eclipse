@@ -1,12 +1,24 @@
 #ifndef MyTimeTest_h
 #define MyTimeTest_h
 
+#include <Arduino.h>
+#include "MyTime.h"
+
 // Test the different member functions of MyTime
 class MyTimeTest {
 public:
-    static void testConstruction();
+    static void testUnix();
 
-    static void testParsing();
+    static void testUTC();
+
+    static void testTimeZone();
+    
+    static void testParsingUTC();
+
+    static void testParsingTimeZone();
+
+private:
+    static void printTime(MyTime time, String description);
 };
 
 #endif

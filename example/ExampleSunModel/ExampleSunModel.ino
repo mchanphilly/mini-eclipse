@@ -12,9 +12,15 @@ void setup() {
     Serial.begin(9600);
     Serial.println();
 
-    MyTimeTest::testConstruction();
+    MyTimeTest::testUnix();
 
-    MyTimeTest::testParsing();
+    MyTimeTest::testUTC();
+
+    MyTimeTest::testTimeZone();
+
+    MyTimeTest::testParsingUTC();
+
+    MyTimeTest::testParsingTimeZone();
 }
 
 void loop() {
