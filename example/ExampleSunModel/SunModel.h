@@ -2,6 +2,7 @@
 #define SunModel_h
 
 #include <Arduino.h>
+#include "MyTime.h"
 
 class SunModel {
 public:
@@ -35,7 +36,7 @@ public:
      * @param time 
      * @return SolarAngles 
      */
-    SolarAngles anglesAt(unsigned long time) const;
+    SolarAngles anglesAt(MyTime time) const;
 
 private:
     const Location location;
@@ -49,7 +50,7 @@ private:
      * @param time 
      * @return SolarAngles 
      */
-    SolarAngles rawAngles(unsigned long time) const;
+    SolarAngles rawAngles(MyTime time) const;
 
     SolarAngles adjustForWindow(SolarAngles raw) const;
 };

@@ -2,9 +2,7 @@
 
 #include <Arduino.h>
 #include <SolarCalculator.h>
-
-// #include "MyTime.h"
-typedef unsigned long time_t;
+#include "MyTime.h"
 
 void SunModel::Location::print() const {
     printPair("Location", latitude, longitude);
@@ -34,16 +32,16 @@ SunModel::SunModel(const Location _location, const SolarAngles _windowOffset):
         windowOffset(_windowOffset)
     {}
 
-SunModel::SolarAngles SunModel::anglesAt(time_t time) const {
+SunModel::SolarAngles SunModel::anglesAt(MyTime time) const {
         auto raw = rawAngles(time);
         auto adjusted = adjustForWindow(raw);
         return adjusted;
 }
 
-SunModel::SolarAngles SunModel::rawAngles(time_t time) const {
+SunModel::SolarAngles SunModel::rawAngles(MyTime time) const {
         double azimuth, altitude;
         calcHorizontalCoordinates(
-            time,
+            time.unixTime,
             location.latitude,
             location.longitude,
             azimuth,
