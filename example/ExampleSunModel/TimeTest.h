@@ -1,11 +1,11 @@
-#ifndef MyTimeTest_h
-#define MyTimeTest_h
+#ifndef TimeTest_h
+#define TimeTest_h
 
 #include <Arduino.h>
-#include "MyTime.h"
+#include "Time.h"
 
-// Test the different member functions of MyTime
-class MyTimeTest {
+// Test the different member functions of Time
+class TimeTest {
 public:
     static void runAllTests();
 
@@ -20,7 +20,7 @@ public:
     static void testParsingTimeZone();
 
 private:
-    static void printTime(MyTime time, String description);
+    static void printTime(Time time, String description);
 };
 
 #endif

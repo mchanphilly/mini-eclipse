@@ -1,23 +1,23 @@
-#include "MyTime.h"
+#include "Time.h"
 
 #include <Arduino.h>
 #include <TimeLib.h>
 
-MyTime::MyTime(time_t unix):
+Time::Time(time_t unix):
     unixTime{unix}
 {}
 
-MyTime::MyTime(int year, int month, int day, int hour, int minute, int utcOffset=0):
+Time::Time(int year, int month, int day, int hour, int minute, int utcOffset=0):
     unixTime{listToUnix(year, month, day, hour, minute, utcOffset)}
 {}
 
-// Makes a MyTime using a string of form yyyy.mm.dd hh:mm -5
+// Makes a Time using a string of form yyyy.mm.dd hh:mm -5
 // TODO make work
-MyTime::MyTime(String timeString):
+Time::Time(String timeString):
     unixTime{stringToUnix(timeString)}
 {}
 
-size_t MyTime::printTo(Print &p) const {
+size_t Time::printTo(Print &p) const {
     size_t size = 0;
     TimeElements elements;
     breakTime(unixTime, elements);
@@ -38,7 +38,7 @@ size_t MyTime::printTo(Print &p) const {
     return size;
 }
 
-const time_t MyTime::listToUnix(int year, int month, int day, int hour, int minute, int utcOffset=0) {
+const time_t Time::listToUnix(int year, int month, int day, int hour, int minute, int utcOffset=0) {
     auto elements = TimeElements{0, minute, hour, 0, day, month, year - 1970};
     time_t outTime = makeTime(elements);
 
@@ -49,7 +49,7 @@ const time_t MyTime::listToUnix(int year, int month, int day, int hour, int minu
 }
 
 // TODO make work
-const time_t MyTime::stringToUnix(const String timeString) {
+const time_t Time::stringToUnix(const String timeString) {
     constexpr int numFields {6};  // Year, Month, Day,  Hour, Minute, UTCOffset
     constexpr int numDelimiters {numFields - 1};
 

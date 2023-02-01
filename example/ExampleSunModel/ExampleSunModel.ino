@@ -1,4 +1,4 @@
-#include "MyTimeTest.h"
+#include "TimeTest.h"
 #include "SunModelTest.h"
 
 
@@ -6,7 +6,7 @@ void setup() {
     Serial.begin(9600);
     Serial.println();
 
-    // MyTimeTest::runAllTests();
+    TimeTest::runAllTests();
     SunModelTest::runAllTests();
 }
 

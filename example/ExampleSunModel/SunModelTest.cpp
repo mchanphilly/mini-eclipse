@@ -1,6 +1,6 @@
 #include "SunModelTest.h"
 #include "SunModel.h"
-#include "MyTime.h"
+#include "Time.h"
 
 void SunModelTest::runAllTests() {
     testLocation();
@@ -64,7 +64,7 @@ void SunModelTest::testAnglesAtThreeTimes() {
 }
 
 void SunModelTest::testAngles(const SunModel &model, const String timeString) {
-    auto time {MyTime{timeString}};
+    auto time {Time{timeString}};
     auto angles {model.anglesAt(time)};
 
     angles.print();
