@@ -7,6 +7,8 @@
 // Test the different member functions of MyTime
 class MyTimeTest {
 public:
+    static void runAllTests();
+
     static void testUnix();
 
     static void testUTC();

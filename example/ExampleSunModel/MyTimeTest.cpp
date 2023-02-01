@@ -3,6 +3,14 @@
 #include "MyTime.h"
 #include <Arduino.h>
 
+void MyTimeTest::runAllTests() {
+    testUnix();
+    testUTC();
+    testTimeZone();
+    testParsingUTC();
+    testParsingTimeZone();
+}
+
 void MyTimeTest::testUnix() {
     auto time = MyTime{1675194710UL};
 

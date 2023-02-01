@@ -12,6 +12,7 @@ MyTime::MyTime(int year, int month, int day, int hour, int minute, int utcOffset
 {}
 
 // Makes a MyTime using a string of form yyyy.mm.dd hh:mm -5
+// TODO make work
 MyTime::MyTime(String timeString):
     unixTime{stringToUnix(timeString)}
 {}
@@ -43,12 +44,11 @@ const time_t MyTime::listToUnix(int year, int month, int day, int hour, int minu
 
     // Timezone adjustment
     long offsetSeconds = utcOffset * SECS_PER_HOUR;
-    Serial.println("Offset seconds may be negative");
-    Serial.println(offsetSeconds);
 
     return outTime - offsetSeconds;  // minus because that's how it works in timezones
 }
 
+// TODO make work
 const time_t MyTime::stringToUnix(const String timeString) {
     constexpr int numFields {6};  // Year, Month, Day,  Hour, Minute, UTCOffset
     constexpr int numDelimiters {numFields - 1};
@@ -63,40 +63,20 @@ const time_t MyTime::stringToUnix(const String timeString) {
         delimiterIndex[i] = timeString.indexOf(delimiters[i], delimiterIndex[i - 1] + 1);
     }
 
-    // Serial.println("Indices");
-    // for (int index : delimiterIndex) {
-    //     Serial.println(index);
-    // }
-
     // Figure the substrings afterward.
-    int substrings[numFields];
-    substrings[0] = timeString.substring(0, delimiterIndex[0]).toInt();
-
-    // Skip first and last
-    for (int i = 1; i < numDelimiters; i++) {
-        substrings[i] = timeString.substring(delimiterIndex[i - 1] + 1, delimiterIndex[i]).toInt();
-    }
-
-    // if (int lastIndex = delimiterIndex[numDelimiters - 1] == -1) {
-    //     substrings[numDelimiters] = "0";
-    // } else {
-    //     substrings[numDelimiters] = timeString.substring(lastIndex + 1);
-    // }
-
-    for (auto string : substrings) {
-        Serial.println(string);
-    }
-
-    // // Last one is optional (timezone), so we put in a little more work.
-    // substrings[numDelimiters - 1] = delimiterIndex[4] == -1 ? "0" : timeString.substring(delimiterIndex[4] + 1);
-
-    // Get the fields between the delimiters
     int fields[numFields];
 
-    // for (int i = 0; i < numFields; i++) {
-    //     Serial.println(substrings[i]);
-    //     fields[i] = substrings[i].toInt();
-    // }
+    // Year
+    fields[0] = timeString.substring(0, delimiterIndex[0]).toInt();
+
+    // All else but time zone
+    for (int i = 1; i < numDelimiters; i++) {
+        fields[i] = timeString.substring(delimiterIndex[i - 1] + 1, delimiterIndex[i]).toInt();
+    }
+
+    // Check for time zone
+    int lastIndex = delimiterIndex[numDelimiters - 1];
+    fields[numDelimiters] = lastIndex == -1 ? 0 : timeString.substring(lastIndex).toInt();
 
     return listToUnix(fields[0], fields[1], fields[2], fields[3], fields[4], fields[5]);
 }
