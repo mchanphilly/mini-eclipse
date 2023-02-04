@@ -1,47 +1,44 @@
 #ifndef SunModel_h
 #define SunModel_h
 
-#include <SolarCalculator.h>
-#include <TimeLib.h>
-
+#include <Arduino.h>
+#include "Time.h"
 
 class SunModel {
-    static void printPair(String string, double first, double second) {
-        Serial.print(string);
-        Serial.print(": (");
-        Serial.print(first);
-        Serial.print(", ");
-        Serial.print(second);
-        Serial.println(")");
-    }
-
-    public:
+public:
     struct Location {
-        double latitude;
-        double longitude;
+        const double latitude;
+        const double longitude;
 
-        void print() {
-            printPair("Location", latitude, longitude);
-        }
+        void print() const;
     };
 
     struct SolarAngles {
-        double azimuth;
-        double altitude;
+        const double azimuth;
+        const double altitude;
 
-        SolarAngles operator-(const SolarAngles& other) {
-            SolarAngles out;
-            out.azimuth = this->azimuth - other.azimuth;
-            out.altitude = this->altitude - other.altitude;
-            return out;
-        }
+        SolarAngles operator-(const SolarAngles& other) const;
 
-        void print() {
-            printPair("SolarAngles", azimuth, altitude);
-        }
+        void print() const;
     };
 
-    private:
+    SunModel(
+        const double latitude,
+        const double longitude,
+        const double windowAzimuth,
+        const double windowAltitude);
+
+    SunModel(const Location _location, const SolarAngles _windowOffset);
+
+    /**
+     * @brief Return the angles associated with the time.
+     * 
+     * @param time 
+     * @return SolarAngles 
+     */
+    SolarAngles anglesAt(Time time) const;
+
+private:
     const Location location;
 
     // Solar angles corresponding to the perpendicular to the window.
@@ -53,44 +50,18 @@ class SunModel {
      * @param time 
      * @return SolarAngles 
      */
-    SolarAngles rawAngles(unsigned long time) {
-        double azimuth, altitude;
-        calcHorizontalCoordinates(
-            time,
-            location.latitude,
-            location.longitude,
-            azimuth,
-            altitude);
+    SolarAngles rawAngles(Time time) const;
 
-        return SolarAngles{azimuth, altitude};
-    }
-
-    SolarAngles adjustForWindow(SolarAngles raw) {
-        return raw - windowOffset;
-    }
-
-    public:
-
-    SunModel(
-        const double latitude,
-        const double longitude,
-        const double windowAzimuth,
-        const double windowAltitude):
-            location{latitude, longitude},
-            windowOffset{windowAzimuth, windowAltitude}
-    {}
-
-    /**
-     * @brief Return the angles associated with the time.
-     * 
-     * @param time 
-     * @return SolarAngles 
-     */
-    SolarAngles getAngles(unsigned long time) {
-        auto raw = rawAngles(time);
-        auto adjusted = adjustForWindow(raw);
-        return adjusted;
-    }
+    SolarAngles adjustForWindow(SolarAngles raw) const;
 };
+
+/**
+ * @brief Debug function to print a pair of doubles.
+ * 
+ * @param string 
+ * @param first 
+ * @param second 
+ */
+void printPair(String string, double first, double second);
 
 #endif
