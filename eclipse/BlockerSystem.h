@@ -17,6 +17,8 @@ public:
 
         Position() = default;
 
+        Position(double pair[2]);
+
         Position(double _x, double _y);
 
         size_t printTo(Print& p) const;

@@ -38,7 +38,7 @@ void zeroFromTangential(BlockerSystem::Tangential tangential) {
 }
 
 void go(double pair[2]) {
-  const auto newPosition = BlockerSystem::Position(pair[0], pair[1]);
+  const auto newPosition = BlockerSystem::Position(pair);
   blocker.update(newPosition);
   const auto state = blocker.getStringState();
   const auto lengths = state.toTotalLengths();
@@ -95,7 +95,7 @@ void execute(Parser::Command command) {
       break;
 
     case Parser::CommandType::SoftZero:
-      zeroFromTangential(BlockerSystem::Tangential(pair[0], pair[1]));
+      zeroFromTangential(BlockerSystem::Tangential(pair));
       break;
 
     // case Parser::CommandType::HardZero:

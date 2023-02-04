@@ -13,6 +13,10 @@ BlockerSystem::Position::Position(double _x, double _y)
     : x{_x}, y{_y}
     {}
 
+BlockerSystem::Position::Position(double pair[2])
+    : Position{pair[0], pair[1]}
+    {}
+
 BlockerSystem::StringPair::StringPair(double _left, double _right)
     : left{_left}, right{_right}
     {}
