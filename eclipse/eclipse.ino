@@ -6,14 +6,13 @@
 // Mini-Eclipse project (January 2023)
 // Martin Chan (philadelphia@mit.edu)
 
-
 const int stepXPin = 2;
 const int dirXPin = 5;
 const int stepYPin = 3;
 const int dirYPin = 6;
 const int enableMotorPin = 8;
 
-const double initialTangential[2] = {8, 42};
+const auto initialStrings = BlockerSystem::Tangential(8, 42);
 
 MotorSystem motors(stepYPin, dirYPin, stepXPin, dirXPin);
 BlockerSystem blocker;
@@ -28,14 +27,22 @@ void printPair(double pair[2]) {
 }
 
 // Input tangentials
-void zeroMotorsFromTangentials(const double tangential[2]) {
+void zeroFromTangential(BlockerSystem::Tangential tangential) {
   // Blocker zeros on tangentials
-  double lengths[2];
-  blocker.getLengthsFromTangential(lengths, tangential);
+  blocker.softZero(tangential);
+  auto state = blocker.getStringState();
 
+  auto trueLength = state.toTotalLengths();
   // Motors zero on true lengths.
-  motors.zero(lengths[0], lengths[1]);
-  printPair(lengths);
+  motors.zero(trueLength.left, trueLength.right);
+}
+
+void go(double pair[2]) {
+  const auto newPosition = BlockerSystem::Position(pair[0], pair[1]);
+  blocker.update(newPosition);
+  const auto state = blocker.getStringState();
+  const auto lengths = state.toTotalLengths();
+  motors.go(lengths.left, lengths.right, MotorSystem::Unit::Inch);
 }
 
 void execute(Parser::Command command) {
@@ -44,6 +51,8 @@ void execute(Parser::Command command) {
 
   double pair[2] = {num1, num2};
   double lengths[2];
+  auto state = blocker.getStringState();
+
   // If only this was C++17 and not C++11
   // using enum Parser::CommandType;
 
@@ -82,31 +91,25 @@ void execute(Parser::Command command) {
 
     case Parser::CommandType::GetInch:
       // Note that this does NOT include the arc
-      blocker.getTangential(lengths);
-      printPair(lengths);
+      Serial.println(state.toTangential());
       break;
 
     case Parser::CommandType::SoftZero:
-        blocker.softZero(pair);
-        zeroMotorsFromTangentials(pair);
-        break;
+      zeroFromTangential(BlockerSystem::Tangential(pair[0], pair[1]));
+      break;
 
-    case Parser::CommandType::HardZero:
-        blocker.hardZero(pair);
-        zeroMotorsFromTangentials(pair);
-        break;
+    // case Parser::CommandType::HardZero:
+    //   blocker.hardZero(pair);
+    //   zeroMotorsFromTangentials(pair);
+    //   break;
 
     case Parser::CommandType::Go:
-        blocker.getLengthsFromPosition(lengths, pair);
-        motors.go(lengths[0], lengths[1], MotorSystem::Unit::Inch);
-        
-        blocker.setPosition(pair);
-        break;
+      go(pair);
+      break;
 
     case Parser::CommandType::GetPosition:
-        blocker.getPosition(pair);
-        printPair(pair);
-        break;
+      Serial.println(state.toPosition());
+      break;
 
     
 
@@ -122,8 +125,8 @@ void setup() {
   Serial.begin(9600);
   motors.init();
 
-  blocker.hardZero(initialTangential);
-  zeroMotorsFromTangentials(initialTangential);
+  zeroFromTangential(initialStrings);
+  Serial.println(blocker.getStringState());
 }
 
 void loop() {
@@ -133,6 +136,7 @@ void loop() {
 
     auto command = parser.parse(string);
     execute(command);
+    Serial.println(blocker.getStringState());
   }
 
   motors.run();
