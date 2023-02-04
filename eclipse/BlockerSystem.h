@@ -11,8 +11,7 @@
 class BlockerSystem {
 
 public:
-    class Position : public Printable {
-    public:
+    struct Position : public Printable {
         double x {0};
         double y {0};
 
@@ -23,8 +22,7 @@ public:
         size_t printTo(Print& p) const;
     };
 
-    class StringPair : public Printable {
-    public:
+    struct StringPair : public Printable {
         double left {0};
         double right {0};
 
@@ -40,8 +38,7 @@ public:
      * to the blocker
      * 
      */
-    class Radial : public StringPair {
-    public:
+    struct Radial : public StringPair {
         using StringPair::StringPair;
         /**
          * @brief Use Heron's formula to find the vertical offset from the axis of the motors
@@ -51,18 +48,15 @@ public:
         double findOffset() const;
     };
 
-    class Tangential : public StringPair {
-    public:
+    struct Tangential : public StringPair {
         using StringPair::StringPair;
     };
 
-    class ArcLength : public StringPair {
-    public:
+    struct ArcLength : public StringPair {
         using StringPair::StringPair;
     };
 
-    class Angle : public StringPair {
-    public:
+    struct Angle : public StringPair {
         using StringPair::StringPair;
 
         Angle operator-(const Angle& other) const {
@@ -77,13 +71,12 @@ public:
         }
     };
 
-    class TotalLengths : public StringPair {
-    public:
+    struct TotalLengths : public StringPair {
         using StringPair::StringPair;
         TotalLengths(Tangential tangential, ArcLength arc);
     };
 
-    class StringState {
+    class StringState : public Printable {
     public:
         StringState() = default;
 
@@ -94,7 +87,7 @@ public:
         // Note that we don't yet update origin.
         // StringState(Position _position);
 
-        void calibrate(Position _position);
+        void update(Position _position);
 
         Radial toRadial() const;
 
@@ -104,25 +97,22 @@ public:
 
         TotalLengths toTotalLengths() const;
 
+        size_t printTo(Print& p) const;
+
     private:
         // Choosing radial for the internal representation.
         Radial radial;
         double originOffset;  // vertical offset from declared origin
     };
 
-    BlockerSystem() = default;
+    // BlockerSystem(const StringState initialState);
+
+    void update(Position position);
 
     /**
      * @brief Return the internal string state
      */
     const StringState& getStringState() const;
-
-    /**
-     * @brief Reset internal position to origin and all that entails.
-     * 
-     * @param straightLengths
-     */
-    // void hardZero(const Tangential tangential);
 
     /**
      * @brief Reset internal position to reflect the physical system; the

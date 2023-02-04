@@ -25,6 +25,10 @@ size_t BlockerSystem::StringPair::printTo(Print& p) const {
     return printToPair(p, this->left, this->right);
 }
 
+size_t BlockerSystem::StringState::printTo(Print& p) const {
+    return this->toTangential().printTo(p);
+}
+
 double BlockerSystem::Radial::findOffset() const {
     const double semiPerimeter = (left + right + width) / 2;
     const double area = sqrt(semiPerimeter *
@@ -52,9 +56,9 @@ BlockerSystem::StringState::StringState(Tangential _tangential) {
 }
 
 
-void BlockerSystem::StringState::calibrate(Position _position) {
+void BlockerSystem::StringState::update(Position _position) {
     const auto currentOffset =  _position.y + originOffset;
-    radial = getHypotenuses<Radial>(_position.x, _position.y, currentOffset);
+    radial = getHypotenuses<Radial>(_position.x, width - _position.x, currentOffset);
 }
 
 BlockerSystem::Radial BlockerSystem::StringState::toRadial() const {
@@ -71,46 +75,35 @@ BlockerSystem::Position BlockerSystem::StringState::toPosition() const {
     // Note that this assumes about the coordinate system.
     const double x = getLeg(radial.left, currentOffset);
     const double y = currentOffset - originOffset;
-    return Position{x, y};
+    return Position(x, y);
 }
 
 BlockerSystem::TotalLengths BlockerSystem::StringState::toTotalLengths() const {
     auto position = this->toPosition();
     const double x {position.x};
     const double y {position.y + originOffset};  // True y
-    Serial.print("Position (not adjusted): ");
-    Serial.println(position);
 
     // y should always be positive
     const Angle vertical {atan(x/y), atan((width - x)/y)};
-    Serial.print("Vertical: ");
-    Serial.println(vertical);
 
     // Angle between radial and the radius connected to tangent
     const double r {MotorSystem::inchRadius};
     const Angle tangentRadial {acos(r/radial.left), acos(r/radial.right)};
-    Serial.print("RadTan corner: ");
-    Serial.println(tangentRadial);
-
     const Angle starter{PI/2, PI/2};
-
     const Angle offset = starter - (tangentRadial - vertical);
-
-    Serial.print("Offset angle: ");
-    Serial.println(offset);
 
     const ArcLength arc = offset.toArcLength(r);
 
     return TotalLengths{this->toTangential(), arc};
 }
 
+void BlockerSystem::update(Position position) {
+    state.update(position);
+}
+
 const BlockerSystem::StringState& BlockerSystem::getStringState() const {
     return state;
 }
-
-// void BlockerSystem::hardZero(const Tangential tangential) {
-//     // auto temp = StringState(tangential);
-// }
 
 void BlockerSystem::softZero(const Tangential tangential) {
     state = StringState(tangential);
@@ -127,20 +120,3 @@ size_t printToPair(Print& p, double first, double second) {
 
     return size;
 }
-
-    // /**
-    //  * @brief Reset internal position to origin and all that entails.
-    //  * 
-    //  * @param straightLengths
-    //  */
-    // void hardZero(const double tangential[2]) {
-    //     // We only need the radial lengths to find offset.
-    //     double radial[2];
-    //     getRadialFromTangential(radial, tangential);
-
-    //     // Change origin so we offset appropriately.
-    //     // TODO check if this just resets vertical but also horizontal
-    //     // e.g. Can we reset 0,0 to be closer to the middle?
-    //     originOffset = findOffset(radial);
-    //     memset(currentPosition, 0, sizeof(currentPosition));
-    // }
