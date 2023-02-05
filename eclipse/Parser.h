@@ -1,6 +1,8 @@
 #ifndef Parser_h
 #define Parser_h
 
+#include <Arduino.h>
+
 class Parser {
     public:
     enum class CommandType {
@@ -22,7 +24,7 @@ class Parser {
             HardZero, // origin [str1] [str2] (declare current position as (0, 0) with str lengths in inches)
             SoftZero, // fix [str1] [str2] (adjust str lengths and position to match; keeps old origin)
     };
-    class Command {
+    class Command : public Printable {
         /**
          * @brief 
          * e.g. goto 1 3
@@ -39,6 +41,18 @@ class Parser {
             type = t;
             num1 = n1;
             num2 = n2;
+        }
+
+        size_t printTo(Print& p) const {
+            size_t size = 0;
+            size += p.print("Command type: ");
+            size += p.print((int)type);
+            size += p.print(" (");
+            size += p.print(num1);
+            size += p.print(", ");
+            size += p.print(num2);
+            size += p.print(")");
+            return size;
         }
     };
 
@@ -96,19 +110,9 @@ class Parser {
             }
         }
 
-        // Serial.println(commandString + "|" + intString1 + "|" + intString2);
-
         CommandType type = processType(commandString);
         double number1 = intString1.toDouble();
         double number2 = intString2.toDouble();
-
-        // #ifdef DEBUG
-        Serial.print((int)type);
-        Serial.print("|");
-        Serial.print(number1);
-        Serial.print("|");
-        Serial.println(number2);
-        // #endif
 
         return Command(type, number1, number2);
     }
