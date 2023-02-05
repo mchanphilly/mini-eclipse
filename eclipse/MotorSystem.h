@@ -14,10 +14,7 @@ public:
     Inch
   };
 
-  MotorSystem(const int leftPin1,
-              const int leftPin2,
-              const int rightPin1,
-              const int rightPin2);
+  MotorSystem();
 
   void run();
 
@@ -57,6 +54,10 @@ private:
   // left and right
   AccelStepper steppers[2];
 
+  static constexpr int stepXPin {2};
+  static constexpr int dirXPin {5};
+  static constexpr int stepYPin {3};
+  static constexpr int dirYPin {6};
   static constexpr int enableMotorPin {8};
 
   static constexpr int stepsInMotor {200};

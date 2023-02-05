@@ -32,11 +32,11 @@ void MotorSystem::setSpeed(long whatSpeed) {
   }
 }
 
-MotorSystem::MotorSystem(const int leftPin1,
-            const int leftPin2,
-            const int rightPin1,
-            const int rightPin2):
-  steppers{{AccelStepper::DRIVER, leftPin1, leftPin2}, {AccelStepper::DRIVER, rightPin1, rightPin2}}
+MotorSystem::MotorSystem():
+  steppers{
+    {AccelStepper::DRIVER, stepYPin, dirYPin},
+    {AccelStepper::DRIVER, stepXPin, dirXPin}
+  }
   {}
 
 void MotorSystem::run() {
