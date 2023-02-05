@@ -19,8 +19,19 @@ public:
 
     static void testParsingTimeZone();
 
+    static void testBlockingComparison();
+
+    // static void testBlockingRealTime();
+
+    static void testBlockingFaster();
+
 private:
     static void printTime(Time time, String description);
+
+    // Update the Time class for seconds, blocking.
+    static void blockingUpdate(double seconds);
+
+    static void assertEquals(Time expected, Time actual, String name);
 };
 
 #endif

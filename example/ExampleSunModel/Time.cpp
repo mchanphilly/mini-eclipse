@@ -3,6 +3,10 @@
 #include <Arduino.h>
 #include <TimeLib.h>
 
+double Time::rate {1};
+time_t Time::now {0};
+time_t Time::lastPolled {0};
+
 Time::Time(time_t unix):
     unixTime{unix}
 {}
@@ -38,7 +42,55 @@ size_t Time::printTo(Print &p) const {
     return size;
 }
 
-const time_t Time::listToUnix(int year, int month, int day, int hour, int minute, int utcOffset=0) {
+static void Time::setSpeed(double multiplier) {
+    if (multiplier < 0) {
+        Serial.println("Bad rate");
+    }
+    
+    rate = multiplier;
+}
+
+static void Time::setTime(Time time) {
+    Time::lastPolled = seconds();
+    Time::now = time.unixTime;
+    // Could refactor to use update() if wanted.
+}
+
+static void Time::setTime(const String timeString) {
+    const auto time = Time(timeString);
+    Time::setTime(time);
+}
+
+// Undefined behavior if now() is called
+// at intervals greater than rollover time
+static void Time::update() {
+    // Note that there's a very light drift since
+    // we implicitly call millis() two different times.
+    auto elapsed = seconds() - Time::lastPolled;
+    if (elapsed) {  // Seconds are slower, so let's not risk it if unnecessary.
+        Time::lastPolled = seconds();
+        Time::now += elapsed * static_cast<unsigned long>(rate);
+    }
+}
+
+Time Time::getNow() {
+    return Time(now);
+}
+
+time_t Time::getRawNow() {
+    return now;
+}
+
+bool Time::operator==(const Time& other) const {
+    return this->unixTime == other.unixTime;
+}
+
+
+bool Time::operator<(const Time& other) const {
+    return this->unixTime < other.unixTime;
+}
+
+time_t Time::listToUnix(int year, int month, int day, int hour, int minute, int utcOffset=0) {
     auto elements = TimeElements{0, minute, hour, 0, day, month, year - 1970};
     time_t outTime = makeTime(elements);
 
@@ -48,8 +100,8 @@ const time_t Time::listToUnix(int year, int month, int day, int hour, int minute
     return outTime - offsetSeconds;  // minus because that's how it works in timezones
 }
 
-// TODO make work
-const time_t Time::stringToUnix(const String timeString) {
+
+time_t Time::stringToUnix(const String timeString) {
     constexpr int numFields {6};  // Year, Month, Day,  Hour, Minute, UTCOffset
     constexpr int numDelimiters {numFields - 1};
 
