@@ -33,9 +33,12 @@ public:
     static Time getNow();
     static time_t getRawNow();
 
+    static Time fromMinutes(double minutes);
+
     bool operator==(const Time& other) const;
     bool operator<(const Time& other) const;
 
+    // todo check if this can be private
     static double rate;
 
     time_t unixTime;

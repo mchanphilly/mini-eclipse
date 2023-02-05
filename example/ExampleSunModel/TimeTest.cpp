@@ -17,6 +17,7 @@ void TimeTest::runAllTests() {
     testBlockingComparison();
     // testBlockingRealTime();
     testBlockingFaster();
+    testFromMinutes();
     Serial.println("All Time tests passed");
 }
 
@@ -78,6 +79,16 @@ void TimeTest::testBlockingFaster() {
     Serial.println(Time::getNow());
     blockingUpdate(5);
     Serial.println(Time::getNow());
+}
+
+void TimeTest::testFromMinutes() {
+    auto expected = Time(300);
+    auto actual = Time::fromMinutes(5);
+    assertEquals(expected, actual, "Time from minutes");
+
+    auto fractionExpected = Time(90);
+    auto fractionActual = Time::fromMinutes(1.5);
+    assertEquals(fractionExpected, fractionActual, "Time from fractional");
 }
 
 void TimeTest::printTime(Time time, String description) {

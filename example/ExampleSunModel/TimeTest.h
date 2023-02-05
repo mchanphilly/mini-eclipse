@@ -25,6 +25,8 @@ public:
 
     static void testBlockingFaster();
 
+    static void testFromMinutes();
+
 private:
     static void printTime(Time time, String description);
 

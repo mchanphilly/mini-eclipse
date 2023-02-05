@@ -81,6 +81,10 @@ time_t Time::getRawNow() {
     return now;
 }
 
+Time Time::fromMinutes(double minutes) {
+    return Time(SECS_PER_MIN * minutes);
+}
+
 bool Time::operator==(const Time& other) const {
     return this->unixTime == other.unixTime;
 }
