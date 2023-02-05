@@ -30,6 +30,8 @@ public:
 
         StringPair() = default;
 
+        StringPair(double pair[2]);
+
         StringPair(double _left, double _right);
 
         size_t printTo(Print& p) const;

@@ -3,12 +3,6 @@
 #include <Arduino.h>
 #include "MotorSystem.h"
 
-// using BlockerSystem::StringState;
-// using BlockerSystem::Radial;
-// using BlockerSystem::Tangential;
-// using BlockerSystem::Position;
-// using namespace BlockerSystem;
-
 BlockerSystem::Position::Position(double _x, double _y)
     : x{_x}, y{_y}
     {}
@@ -21,12 +15,16 @@ BlockerSystem::StringPair::StringPair(double _left, double _right)
     : left{_left}, right{_right}
     {}
 
+BlockerSystem::StringPair::StringPair(double pair[2])
+    : StringPair{pair[0], pair[1]}
+    {}
+
 size_t BlockerSystem::Position::printTo(Print& p) const {
-    return printToPair(p, this->x, this->y);
+    return p.print("Position: ") + printToPair(p, this->x, this->y);
 }
 
 size_t BlockerSystem::StringPair::printTo(Print& p) const {
-    return printToPair(p, this->left, this->right);
+    return p.print("StringPair: ") + printToPair(p, this->left, this->right);
 }
 
 size_t BlockerSystem::StringState::printTo(Print& p) const {
