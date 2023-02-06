@@ -1,15 +1,40 @@
 #include "Parser.h"
 
-const Parser::Command Parser::empty = Parser::Command(Parser::CommandType::Invalid, 0, 0);
+namespace Parser {
 
-Parser::Command::Command(Parser::CommandType t, double n1, double n2)
+namespace {
+    CommandType processType(String commandString) {
+        #define parseCase(str, ct) if (commandString.equals(str)) {return CommandType::ct;}
+
+        parseCase("getstep", GetStep);
+        parseCase("gostep", GoStep);
+        parseCase("step", ShiftStep);
+
+        parseCase("getinch", GetInch);
+        parseCase("goinch", GoInch);
+        parseCase("inch", ShiftInch);
+
+        parseCase("getpos", GetPosition);
+        parseCase("go", Go);
+        parseCase("shift", Shift);
+
+        parseCase("fix", SoftZero);
+        parseCase("origin", HardZero);
+        #undef parseCase
+
+        // Shouldn't get here if we had a valid command.
+        return CommandType::Invalid;
+    }
+}
+
+Command::Command(CommandType t, double n1, double n2)
     :   type{t},
         num1{n1},
         num2{n2}
     {}
 
 
-size_t Parser::Command::printTo(Print& p) const {
+size_t Command::printTo(Print& p) const {
     size_t size = 0;
     size += p.print("Command type: ");
     size += p.print((int)type);
@@ -21,30 +46,8 @@ size_t Parser::Command::printTo(Print& p) const {
     return size;
 }
 
-Parser::CommandType Parser::processType(String commandString) {
-    #define parseCase(str, ct) if (commandString.equals(str)) {return CommandType::ct;}
 
-    parseCase("getstep", GetStep);
-    parseCase("gostep", GoStep);
-    parseCase("step", ShiftStep);
-
-    parseCase("getinch", GetInch);
-    parseCase("goinch", GoInch);
-    parseCase("inch", ShiftInch);
-
-    parseCase("getpos", GetPosition);
-    parseCase("go", Go);
-    parseCase("shift", Shift);
-
-    parseCase("fix", SoftZero);
-    parseCase("origin", HardZero);
-    #undef parseCase
-
-    // Shouldn't get here if we had a valid command.
-    return CommandType::Invalid;
-}
-
-static Parser::Command Parser::parse(String string) {
+Command parse(String string) {
     String intString1 = "";
     String intString2 = "";
 
@@ -64,9 +67,10 @@ static Parser::Command Parser::parse(String string) {
         }
     }
 
-    Parser::CommandType type = Parser::processType(commandString);
+    CommandType type = processType(commandString);
     double number1 = intString1.toDouble();
     double number2 = intString2.toDouble();
 
-    return Parser::Command(type, number1, number2);
+    return Command(type, number1, number2);
+}
 }
