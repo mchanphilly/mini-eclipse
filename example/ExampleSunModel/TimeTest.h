@@ -27,6 +27,8 @@ public:
 
     static void testFromMinutes();
 
+    static void testAdd();
+
 private:
     static void printTime(Time time, String description);
 

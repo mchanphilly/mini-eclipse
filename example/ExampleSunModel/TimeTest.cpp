@@ -18,6 +18,7 @@ void TimeTest::runAllTests() {
     // testBlockingRealTime();
     testBlockingFaster();
     testFromMinutes();
+    testAdd();
     Serial.println("All Time tests passed");
 }
 
@@ -89,6 +90,12 @@ void TimeTest::testFromMinutes() {
     auto fractionExpected = Time(90);
     auto fractionActual = Time::fromMinutes(1.5);
     assertEquals(fractionExpected, fractionActual, "Time from fractional");
+}
+
+void TimeTest::testAdd() {
+    auto first = Time(200);
+    auto second = Time(300);
+    assertEquals(Time(500), first + second, "Test add");
 }
 
 void TimeTest::printTime(Time time, String description) {

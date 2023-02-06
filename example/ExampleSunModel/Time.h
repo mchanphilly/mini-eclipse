@@ -37,6 +37,8 @@ public:
 
     bool operator==(const Time& other) const;
     bool operator<(const Time& other) const;
+    
+    Time operator+(const Time& other) const;
 
     // todo check if this can be private
     static double rate;

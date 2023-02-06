@@ -94,6 +94,11 @@ bool Time::operator<(const Time& other) const {
     return this->unixTime < other.unixTime;
 }
 
+Time Time::operator+(const Time& other) const {
+    return Time(this->unixTime + other.unixTime);
+}
+
+
 time_t Time::listToUnix(int year, int month, int day, int hour, int minute, int utcOffset=0) {
     auto elements = TimeElements{0, minute, hour, 0, day, month, year - 1970};
     time_t outTime = makeTime(elements);
