@@ -4,26 +4,14 @@
 #include "BlockerSystem.h"
 #include "Parser.h"
 
-class Executor {
-public:
+namespace Executor {
     void init();
 
     void run();
 
     void execute(Parser::Command command);
 
-    const BlockerSystem::StringState& getState() const;
-private:
-    inline void printPosition();
-
-    void printTangential();
-
-    void go(BlockerSystem::Position position);
-
-    void zero(BlockerSystem::Tangential tangential);
-
-    BlockerSystem blocker;
-    MotorSystem motors;
-};
+    const BlockerSystem::StringState& getState();
+}
 
 #endif

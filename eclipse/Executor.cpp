@@ -4,7 +4,37 @@
 #include "Parser.h"
 #include "MotorSystem.h"
 
-void Executor::execute(Parser::Command command) {
+namespace Executor {
+namespace {
+BlockerSystem blocker;
+MotorSystem motors;
+
+inline void printPosition() {
+    Serial.println(blocker.getStringState().toPosition());
+}
+
+inline void printTangential() {
+    Serial.println(blocker.getStringState().toTangential());
+}
+
+void go(BlockerSystem::Position position) {
+    blocker.update(position);
+    const auto state = blocker.getStringState();
+    const auto lengths = state.toTotalLengths();
+
+    motors.go(lengths.left, lengths.right, MotorSystem::Unit::Inch);
+}
+
+void zero(BlockerSystem::Tangential tangential) {
+    blocker.softZero(tangential);
+    const auto state = blocker.getStringState();
+    const auto lengths = state.toTotalLengths();
+
+    motors.zero(lengths.left, lengths.right);
+}
+}
+
+void execute(Parser::Command command) {
     // Serial.print("Command entered: ");
     // Serial.println(command);
     double num1 = command.num1;
@@ -73,38 +103,16 @@ void Executor::execute(Parser::Command command) {
     }
 }
 
-void Executor::init() {
+void init() {
     motors.init();
 }
 
-void Executor::run() {
+void run() {
     motors.run();
 }
 
-const BlockerSystem::StringState& Executor::getState() const {
+const BlockerSystem::StringState& getState() {
     return blocker.getStringState();
 }
 
-inline void Executor::printPosition() {
-    Serial.println(blocker.getStringState().toPosition());
-}
-
-inline void Executor::printTangential() {
-    Serial.println(blocker.getStringState().toTangential());
-}
-
-void Executor::go(BlockerSystem::Position position) {
-    blocker.update(position);
-    const auto state = blocker.getStringState();
-    const auto lengths = state.toTotalLengths();
-
-    motors.go(lengths.left, lengths.right, MotorSystem::Unit::Inch);
-}
-
-void Executor::zero(BlockerSystem::Tangential tangential) {
-    blocker.softZero(tangential);
-    const auto state = blocker.getStringState();
-    const auto lengths = state.toTotalLengths();
-
-    motors.zero(lengths.left, lengths.right);
 }

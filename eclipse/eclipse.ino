@@ -16,17 +16,21 @@ const auto initialCommand = Parser::Command(
   initialStrings.right
 );
 
-Executor executor;
-// Scheduler scheduler;
 String string;
+
+void perform(Parser::Command command) {
+  Executor::execute(command);
+  if (verbose) Serial.println(command);
+  Serial.println(Executor::getState());
+}
 
 void setup() {
   pinMode(enableMotorPin, OUTPUT);
   Serial.begin(9600);
 
-  executor.init();
-  executor.execute(initialCommand);
-  Serial.println(executor.getState());
+  Executor::init();
+  Executor::execute(initialCommand);
+  Serial.println(Executor::getState());
 
   Scheduler::init("2023.02.06 18:33 -5", 10);
   Scheduler::setInterval(10);
@@ -38,20 +42,14 @@ void loop() {
     string = Serial.readStringUntil('\n');
 
     auto command = Parser::parse(string);
-
-    executor.execute(command);
-    if (verbose) Serial.println(command);
-    Serial.println(executor.getState());
+    perform(command);
   }
 
   if (Scheduler::ready) {
     auto command = Scheduler::fetch();
-
-    executor.execute(command);
-    if (verbose) Serial.println(command);
-    Serial.println(executor.getState());
+    perform(command);
   }
 
-  executor.run();
+  Executor::run();
   Scheduler::run();
 }
