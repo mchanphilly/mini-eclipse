@@ -35,14 +35,18 @@ void run() {
 
 Parser::Command fetch() {
     /**
-     * @brief I considered whether to use the current
+     * @brief [CHANGED] I considered whether to use the current
      * time or the target time. I decided to keep it on
      * the regular track of target += interval rather
      * than having it be more "faithful" but irregular
+     * 
+     * Actually, so the system doesn't fall behind, we start 
+     * the interval from when we fetch.
      */
-    const auto currentCommand = perform(target);
+    const auto now = Time::getNow();
+    const auto currentCommand = perform(now);
     if (ready) {
-        target = target + interval;
+        target = now + interval;
         return currentCommand;
     } else {
         return Parser::empty;
