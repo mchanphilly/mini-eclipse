@@ -11,6 +11,7 @@ const auto initialStrings = BlockerSystem::Tangential(double(8), double(42));
 
 const auto initialCommand = Parser::Command(
   Parser::CommandType::SoftZero,
+  "",
   initialStrings.left,
   initialStrings.right
 );

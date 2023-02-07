@@ -17,10 +17,18 @@ namespace Tasks {
 }
 }
 
-void init(const String timeString, double rate=1) {
+void setTime(const String timeString) {
     Time::setTime(timeString);
-    Time::setSpeed(rate);
     target = Time::getNow();
+}
+
+void setZone(double offset) {
+    Time::setZone(offset);
+}
+
+void init(const String timeString, double rate=1) {
+    setTime(timeString);
+    Time::setSpeed(rate);
 }
 
 void setInterval(double minutes) {

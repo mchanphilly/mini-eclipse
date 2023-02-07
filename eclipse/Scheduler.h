@@ -8,6 +8,10 @@ namespace Scheduler{
     // Initial implementation: simple long non-blocking loop.
     void init(const String timeString, double rate=1);
 
+    void setTime(const String timeString);
+
+    void setZone(double offset);
+
     void setInterval(double minutes);
 
     void run();

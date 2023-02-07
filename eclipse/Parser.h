@@ -8,6 +8,8 @@ namespace Parser {
 enum class CommandType {
         Invalid,
         Test,  // test [testNumber] (executes a test in Test) [UNUSED]
+        
+        SetTime,  // read the string data
 
         GetStep,  // getstep (gets steps from the zero)
         GoStep,  // gostep [str1] [str2]
@@ -19,21 +21,20 @@ enum class CommandType {
 
         GetPosition,  // getpos (get x, y coordinates)
         Go, // go [x] [y]
-        Shift, // shift [x] [y]
         
-        HardZero, // origin [str1] [str2] (declare current position as (0, 0) with str lengths in inches)
         SoftZero, // fix [str1] [str2] (adjust str lengths and position to match; keeps old origin)
 };
 
 class Command : public Printable {
 public:
-    Command(CommandType t, double n1, double n2);
+    Command(CommandType t, String data, double n1, double n2);
 
     size_t printTo(Print& p) const;
 
     CommandType type;
     double num1;
     double num2;
+    String data;
 };
 
 /**
@@ -46,7 +47,7 @@ public:
  */
 Command parse(String string);
 
-const Command empty {CommandType::Invalid, 0, 0};
+const Command empty {CommandType::Invalid, "", 0, 0};
 }
 
 #endif

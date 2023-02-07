@@ -10,10 +10,6 @@ namespace {
 BlockerSystem blocker;
 MotorSystem motors;
 
-const String startTime = "2023.02.06 19:52 -5";
-constexpr double rate = 1;
-constexpr double interval = 1;
-
 inline void printPosition() {
     Serial.println(blocker.getStringState().toPosition());
 }
@@ -102,6 +98,10 @@ void execute(Parser::Command command) {
         printPosition();
         break;
 
+        case Parser::CommandType::SetTime:
+        Scheduler::setTime(command.data);
+        break;
+
         default:
         Serial.println("Bad command");
         break;
@@ -109,8 +109,16 @@ void execute(Parser::Command command) {
 }
 
 void init() {
+    // const String startTime = "2023.02.06 19:52 -5";
+    const String startTime = "1970.01.01 05:00";
+    constexpr double startZone = -5;
+    constexpr double rate = 1;
+    constexpr double interval = 1;
+
     Scheduler::init(startTime, rate);
+    Scheduler::setZone(startZone);
     Scheduler::setInterval(interval);
+
     motors.init();
 }
 

@@ -6,7 +6,7 @@
 double Time::rate {1};
 time_t Time::now {0};
 time_t Time::lastPolled {0};
-double Time::utcOffset {-5};  // for ET
+double Time::utcOffset {0};  // for ET
 
 Time::Time(time_t unix):
     unixTime{unix}
@@ -40,7 +40,8 @@ size_t Time::printTo(Print &p) const {
     printadd(elements.Hour);
     printadd(':');
     printadd(elements.Minute);
-    printadd(" UTC");
+    printadd(" ");
+    printadd(static_cast<int>(utcOffset));
     #undef printadd
 
     return size;

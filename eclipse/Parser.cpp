@@ -4,7 +4,9 @@ namespace Parser {
 
 namespace {
     CommandType processType(String commandString) {
-        #define parseCase(str, ct) if (commandString.equals(str)) {return CommandType::ct;}
+
+        #define parseCase(str, ct) if (commandString.equals(str)) \
+            {return CommandType::ct;}
 
         parseCase("getstep", GetStep);
         parseCase("gostep", GoStep);
@@ -16,19 +18,20 @@ namespace {
 
         parseCase("getpos", GetPosition);
         parseCase("go", Go);
-        parseCase("shift", Shift);
 
         parseCase("fix", SoftZero);
-        parseCase("origin", HardZero);
+
+        parseCase("settime", SetTime);
+
         #undef parseCase
 
-        // Shouldn't get here if we had a valid command.
         return CommandType::Invalid;
     }
 }
 
-Command::Command(CommandType t, double n1, double n2)
+Command::Command(CommandType t, String _data, double n1, double n2)
     :   type{t},
+        data{_data},
         num1{n1},
         num2{n2}
     {}
@@ -42,7 +45,8 @@ size_t Command::printTo(Print& p) const {
     size += p.print(num1);
     size += p.print(", ");
     size += p.print(num2);
-    size += p.print(")]");
+    size += p.print(")] ");
+    size += p.print(data);
     return size;
 }
 
@@ -69,9 +73,12 @@ Command parse(String string) {
     }
 
     CommandType type = processType(commandString);
+
+    // +2 from the substring index because we want after the space.
+    String data = (type == CommandType::SetTime) ? string.substring(sizeof(commandString) + 2) : "";
     double number1 = intString1.toDouble();
     double number2 = intString2.toDouble();
 
-    return Command(type, number1, number2);
+    return Command(type, data, number1, number2);
 }
 }
