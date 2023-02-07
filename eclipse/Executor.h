@@ -1,7 +1,7 @@
 #ifndef Executor_h
 #define Executor_h
 
-#include "BlockerSystem.h"
+#include "Blocker.h"
 #include "Parser.h"
 
 namespace Executor {
@@ -11,7 +11,7 @@ namespace Executor {
 
     void execute(Parser::Command command);
 
-    const BlockerSystem::StringState& getState();
+    const Blocker::StringState& getState();
 }
 
 #endif

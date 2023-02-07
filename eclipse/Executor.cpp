@@ -1,13 +1,13 @@
 #include "Executor.h"
 
-#include "BlockerSystem.h"
+#include "Blocker.h"
 #include "Parser.h"
 #include "Scheduler.h"
 #include "MotorSystem.h"
 
 namespace Executor {
 namespace {
-BlockerSystem blocker;
+Blocker blocker;
 MotorSystem motors;
 
 inline void printPosition() {
@@ -18,7 +18,7 @@ inline void printTangential() {
     Serial.println(blocker.getStringState().toTangential());
 }
 
-void go(BlockerSystem::Position position) {
+void go(Blocker::Position position) {
     blocker.update(position);
     const auto state = blocker.getStringState();
     const auto lengths = state.toTotalLengths();
@@ -26,7 +26,7 @@ void go(BlockerSystem::Position position) {
     motors.go(lengths.left, lengths.right, MotorSystem::Unit::Inch);
 }
 
-void zero(BlockerSystem::Tangential tangential) {
+void zero(Blocker::Tangential tangential) {
     blocker.softZero(tangential);
     const auto state = blocker.getStringState();
     const auto lengths = state.toTotalLengths();
@@ -87,11 +87,11 @@ void execute(Parser::Command command) {
         break;
 
         case Parser::CommandType::SoftZero:
-        zero(BlockerSystem::Tangential(pair));
+        zero(Blocker::Tangential(pair));
         break;
 
         case Parser::CommandType::Go:
-        go(BlockerSystem::Position(pair));
+        go(Blocker::Position(pair));
         break;
 
         case Parser::CommandType::GetPosition:
@@ -132,7 +132,7 @@ void run() {
     }
 }
 
-const BlockerSystem::StringState& getState() {
+const Blocker::StringState& getState() {
     return blocker.getStringState();
 }
 

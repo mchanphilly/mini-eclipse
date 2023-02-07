@@ -7,7 +7,7 @@
 static constexpr bool verbose = true;
 
 static constexpr int enableMotorPin {8};
-const auto initialStrings = BlockerSystem::Tangential(double(8), double(42));
+const auto initialStrings = Blocker::Tangential(double(8), double(42));
 
 const auto initialCommand = Parser::Command(
   Parser::CommandType::SoftZero,

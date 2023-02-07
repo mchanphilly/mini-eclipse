@@ -1,37 +1,37 @@
-#include "BlockerSystem.h"
+#include "Blocker.h"
 
 #include <Arduino.h>
 #include "MotorSystem.h"
 
-BlockerSystem::Position::Position(double _x, double _y)
+Blocker::Position::Position(double _x, double _y)
     : x{_x}, y{_y}
     {}
 
-BlockerSystem::Position::Position(double pair[2])
+Blocker::Position::Position(double pair[2])
     : Position{pair[0], pair[1]}
     {}
 
-BlockerSystem::StringPair::StringPair(double _left, double _right)
+Blocker::StringPair::StringPair(double _left, double _right)
     : left{_left}, right{_right}
     {}
 
-BlockerSystem::StringPair::StringPair(double pair[2])
+Blocker::StringPair::StringPair(double pair[2])
     : StringPair{pair[0], pair[1]}
     {}
 
-size_t BlockerSystem::Position::printTo(Print& p) const {
+size_t Blocker::Position::printTo(Print& p) const {
     return p.print("Position: ") + printToPair(p, this->x, this->y);
 }
 
-size_t BlockerSystem::StringPair::printTo(Print& p) const {
+size_t Blocker::StringPair::printTo(Print& p) const {
     return p.print("StringPair: ") + printToPair(p, this->left, this->right);
 }
 
-size_t BlockerSystem::StringState::printTo(Print& p) const {
+size_t Blocker::StringState::printTo(Print& p) const {
     return this->toTangential().printTo(p);
 }
 
-double BlockerSystem::Radial::findOffset() const {
+double Blocker::Radial::findOffset() const {
     const double semiPerimeter = (left + right + width) / 2;
     const double area = sqrt(semiPerimeter *
                         (semiPerimeter - left) *
@@ -42,37 +42,37 @@ double BlockerSystem::Radial::findOffset() const {
     return offset;
 }
 
-BlockerSystem::TotalLengths::TotalLengths(Tangential tangential, ArcLength arc) {
+Blocker::TotalLengths::TotalLengths(Tangential tangential, ArcLength arc) {
     left = tangential.left + arc.left;
     right = tangential.right + arc.right;
 }
     
-BlockerSystem::StringState::StringState(Radial _radial)
+Blocker::StringState::StringState(Radial _radial)
     : radial{_radial}, originOffset{_radial.findOffset()}
     {}
 
-BlockerSystem::StringState::StringState(Tangential _tangential) {
+Blocker::StringState::StringState(Tangential _tangential) {
     const auto radius = MotorSystem::inchRadius;
     radial = getHypotenuses<Radial>(_tangential.left, _tangential.right, radius);
     originOffset = radial.findOffset();
 }
 
 
-void BlockerSystem::StringState::update(Position _position) {
+void Blocker::StringState::update(Position _position) {
     const auto currentOffset =  _position.y + originOffset;
     radial = getHypotenuses<Radial>(_position.x, width - _position.x, currentOffset);
 }
 
-BlockerSystem::Radial BlockerSystem::StringState::toRadial() const {
+Blocker::Radial Blocker::StringState::toRadial() const {
     return radial;
 }
 
-BlockerSystem::Tangential BlockerSystem::StringState::toTangential() const {
+Blocker::Tangential Blocker::StringState::toTangential() const {
     const auto radius = MotorSystem::inchRadius;
     return getLegs<Tangential>(radial.left, radial.right, radius);
 }
 
-BlockerSystem::Position BlockerSystem::StringState::toPosition() const {
+Blocker::Position Blocker::StringState::toPosition() const {
     const double currentOffset = radial.findOffset();
     // Note that this assumes about the coordinate system.
     const double x = getLeg(radial.left, currentOffset);
@@ -80,7 +80,7 @@ BlockerSystem::Position BlockerSystem::StringState::toPosition() const {
     return Position(x, y);
 }
 
-BlockerSystem::TotalLengths BlockerSystem::StringState::toTotalLengths() const {
+Blocker::TotalLengths Blocker::StringState::toTotalLengths() const {
     auto position = this->toPosition();
     const double x {position.x};
     const double y {position.y + originOffset};  // True y
@@ -99,15 +99,15 @@ BlockerSystem::TotalLengths BlockerSystem::StringState::toTotalLengths() const {
     return TotalLengths{this->toTangential(), arc};
 }
 
-void BlockerSystem::update(Position position) {
+void Blocker::update(Position position) {
     state.update(position);
 }
 
-const BlockerSystem::StringState& BlockerSystem::getStringState() const {
+const Blocker::StringState& Blocker::getStringState() const {
     return state;
 }
 
-void BlockerSystem::softZero(const Tangential tangential) {
+void Blocker::softZero(const Tangential tangential) {
     state = StringState(tangential);
 }
 

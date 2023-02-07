@@ -1,5 +1,5 @@
-#ifndef BlockerSystem_h
-#define BlockerSystem_h
+#ifndef Blocker_h
+#define Blocker_h
 
 #include <Arduino.h>
 #include "MotorSystem.h"
@@ -8,7 +8,7 @@
  * @brief Responsible for tracking the state of the physical system.
  * 
  */
-class BlockerSystem {
+class Blocker {
 
 public:
     struct Position : public Printable {
@@ -109,7 +109,7 @@ public:
         double originOffset;  // vertical offset from declared origin
     };
 
-    // BlockerSystem(const StringState initialState);
+    // Blocker(const StringState initialState);
 
     void update(Position position);
 
