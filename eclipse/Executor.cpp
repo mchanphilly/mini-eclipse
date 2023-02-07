@@ -26,12 +26,21 @@ void go(Blocker::Position position) {
     motors.go(lengths.left, lengths.right, MotorSystem::Unit::Inch);
 }
 
-void zero(Blocker::Tangential tangential) {
-    blocker.softZero(tangential);
+void syncMotors(Blocker::Tangential tangential) {
     const auto state = blocker.getStringState();
     const auto lengths = state.toTotalLengths();
 
     motors.zero(lengths.left, lengths.right);
+}
+
+void softZero(Blocker::Tangential tangential) {
+    blocker.softZero(tangential);
+    syncMotors(tangential);
+}
+
+void hardZero(Blocker::Tangential tangential) {
+    blocker.hardZero(tangential);
+    syncMotors(tangential);
 }
 }
 
@@ -87,7 +96,11 @@ void execute(Parser::Command command) {
         break;
 
         case Parser::CommandType::SoftZero:
-        zero(Blocker::Tangential(pair));
+        softZero(Blocker::Tangential(pair));
+        break;
+
+        case Parser::CommandType::HardZero:
+        hardZero(Blocker::Tangential(pair));
         break;
 
         case Parser::CommandType::Go:

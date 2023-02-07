@@ -93,6 +93,10 @@ public:
 
         void update(Position _position);
 
+        void softZero(Tangential tangential);
+
+        void hardZero(Tangential tangential);
+
         Radial toRadial() const;
 
         Tangential toTangential() const;
@@ -124,7 +128,9 @@ public:
      * 
      * @param straightLengths
      */
-    void softZero(const Tangential tangential);
+    void softZero(Tangential tangential);
+
+    void hardZero(Tangential tangential);
 
 private:
     StringState state; 

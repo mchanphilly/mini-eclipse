@@ -63,6 +63,18 @@ void Blocker::StringState::update(Position _position) {
     radial = getHypotenuses<Radial>(_position.x, width - _position.x, currentOffset);
 }
 
+void Blocker::StringState::softZero(Tangential tangential) {
+    const auto tempState = StringState(tangential);
+    radial = tempState.toRadial();
+}
+
+void Blocker::StringState::hardZero(Tangential tangential) {
+    const auto tempState = StringState(tangential);
+    // Must be a better way than this;
+    radial = tempState.radial;
+    originOffset = tempState.originOffset;
+}
+
 Blocker::Radial Blocker::StringState::toRadial() const {
     return radial;
 }
@@ -107,8 +119,13 @@ const Blocker::StringState& Blocker::getStringState() const {
     return state;
 }
 
-void Blocker::softZero(const Tangential tangential) {
-    state = StringState(tangential);
+void Blocker::hardZero(Tangential tangential) {
+    state.hardZero(tangential);
+}
+
+// Updates state to contain the right string coordinates without impacting origin
+void Blocker::softZero(Tangential tangential) {
+    state.softZero(tangential);
 }
 
 size_t printToPair(Print& p, double first, double second) {

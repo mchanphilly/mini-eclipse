@@ -22,6 +22,7 @@ enum class CommandType {
         GetPosition,  // getpos (get x, y coordinates)
         Go, // go [x] [y]
         
+        HardZero, // origin [str1] [str2] (make this new origin) Warning: not robust
         SoftZero, // fix [str1] [str2] (adjust str lengths and position to match; keeps old origin)
 };
 

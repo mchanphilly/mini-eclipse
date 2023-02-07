@@ -19,6 +19,7 @@ namespace {
         parseCase("getpos", GetPosition);
         parseCase("go", Go);
 
+        parseCase("origin", HardZero);
         parseCase("fix", SoftZero);
 
         parseCase("settime", SetTime);
