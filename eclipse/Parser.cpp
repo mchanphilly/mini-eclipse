@@ -36,13 +36,13 @@ Command::Command(CommandType t, double n1, double n2)
 
 size_t Command::printTo(Print& p) const {
     size_t size = 0;
-    size += p.print("Command type: ");
+    size += p.print("[");
     size += p.print((int)type);
     size += p.print(" (");
     size += p.print(num1);
     size += p.print(", ");
     size += p.print(num2);
-    size += p.print(")");
+    size += p.print(")]");
     return size;
 }
 
@@ -51,7 +51,8 @@ Command parse(String string) {
     String intString1 = "";
     String intString2 = "";
 
-    Serial.println("Entered: " + string);
+    Serial.println("> " + string);
+    Serial.print("Entered: ");
 
     int split1 = string.indexOf(" ");
     int split2 = string.indexOf(" ", split1 + 1);

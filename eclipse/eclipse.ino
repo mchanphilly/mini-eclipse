@@ -1,7 +1,6 @@
 
 #include "Executor.h"
 #include "Parser.h"
-#include "Scheduler.h"
 // Mini-Eclipse project (January 2023)
 // Martin Chan (philadelphia@mit.edu)
 
@@ -18,12 +17,6 @@ const auto initialCommand = Parser::Command(
 
 String string;
 
-void perform(Parser::Command command) {
-  Executor::execute(command);
-  if (verbose) Serial.println(command);
-  Serial.println(Executor::getState());
-}
-
 void setup() {
   pinMode(enableMotorPin, OUTPUT);
   Serial.begin(9600);
@@ -31,25 +24,15 @@ void setup() {
   Executor::init();
   Executor::execute(initialCommand);
   Serial.println(Executor::getState());
-
-  Scheduler::init("2023.02.06 18:33 -5", 10);
-  Scheduler::setInterval(10);
   }
 
 void loop() {
-  // Verify
+  // Just for unscheduled commands
   if (Serial.available()) {
     string = Serial.readStringUntil('\n');
 
     auto command = Parser::parse(string);
-    perform(command);
+    Executor::execute(command);
   }
-
-  if (Scheduler::ready) {
-    auto command = Scheduler::fetch();
-    perform(command);
-  }
-
   Executor::run();
-  Scheduler::run();
 }

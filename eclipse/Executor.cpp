@@ -2,12 +2,17 @@
 
 #include "BlockerSystem.h"
 #include "Parser.h"
+#include "Scheduler.h"
 #include "MotorSystem.h"
 
 namespace Executor {
 namespace {
 BlockerSystem blocker;
 MotorSystem motors;
+
+const String startTime = "2023.02.06 19:52 -5";
+constexpr double rate = 1;
+constexpr double interval = 1;
 
 inline void printPosition() {
     Serial.println(blocker.getStringState().toPosition());
@@ -36,7 +41,7 @@ void zero(BlockerSystem::Tangential tangential) {
 
 void execute(Parser::Command command) {
     // Serial.print("Command entered: ");
-    // Serial.println(command);
+    Serial.println(command);
     double num1 = command.num1;
     double num2 = command.num2;
 
@@ -104,11 +109,19 @@ void execute(Parser::Command command) {
 }
 
 void init() {
+    Scheduler::init(startTime, rate);
+    Scheduler::setInterval(interval);
     motors.init();
 }
 
 void run() {
+    Scheduler::run();
     motors.run();
+    if (Scheduler::ready) {
+        auto command = Scheduler::fetch();
+        Serial.print("Scheduled: ");
+        execute(command);
+    }
 }
 
 const BlockerSystem::StringState& getState() {
