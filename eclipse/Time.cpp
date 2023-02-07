@@ -6,6 +6,7 @@
 double Time::rate {1};
 time_t Time::now {0};
 time_t Time::lastPolled {0};
+double Time::utcOffset {-5};  // for ET
 
 Time::Time(time_t unix):
     unixTime{unix}
@@ -24,7 +25,10 @@ Time::Time(String timeString):
 size_t Time::printTo(Print &p) const {
     size_t size = 0;
     TimeElements elements;
-    breakTime(unixTime, elements);
+    
+    auto adjusted = fromUTC(unixTime, utcOffset);
+
+    breakTime(adjusted, elements);
 
     #define printadd(e) size += p.print(e)
     printadd(elements.Year + 1970);
@@ -42,7 +46,7 @@ size_t Time::printTo(Print &p) const {
     return size;
 }
 
-static void Time::setSpeed(double multiplier) {
+void Time::setSpeed(double multiplier) {
     if (multiplier < 0) {
         Serial.println("Bad rate");
     }
@@ -50,20 +54,24 @@ static void Time::setSpeed(double multiplier) {
     rate = multiplier;
 }
 
-static void Time::setTime(Time time) {
+void Time::setTime(Time time) {
     Time::lastPolled = seconds();
     Time::now = time.unixTime;
     // Could refactor to use update() if wanted.
 }
 
-static void Time::setTime(const String timeString) {
+void Time::setTime(const String timeString) {
     const auto time = Time(timeString);
     Time::setTime(time);
 }
 
+void Time::setZone(double offset) {
+    utcOffset = offset;
+}
+
 // Undefined behavior if now() is called
 // at intervals greater than rollover time
-static void Time::update() {
+void Time::update() {
     // Note that there's a very light drift since
     // we implicitly call millis() two different times.
     auto elapsed = seconds() - Time::lastPolled;
@@ -89,9 +97,12 @@ bool Time::operator==(const Time& other) const {
     return this->unixTime == other.unixTime;
 }
 
-
 bool Time::operator<(const Time& other) const {
     return this->unixTime < other.unixTime;
+}
+
+bool Time::operator<=(const Time& other) const {
+    return this->operator<(other) || this->operator==(other);
 }
 
 Time Time::operator+(const Time& other) const {
@@ -99,14 +110,12 @@ Time Time::operator+(const Time& other) const {
 }
 
 
-time_t Time::listToUnix(int year, int month, int day, int hour, int minute, int utcOffset=0) {
+time_t Time::listToUnix(int year, int month, int day, int hour, int minute, int offset=0) {
     auto elements = TimeElements{0, minute, hour, 0, day, month, year - 1970};
     time_t outTime = makeTime(elements);
 
     // Timezone adjustment
-    long offsetSeconds = utcOffset * SECS_PER_HOUR;
-
-    return outTime - offsetSeconds;  // minus because that's how it works in timezones
+    return toUTC(outTime, offset);
 }
 
 

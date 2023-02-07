@@ -25,6 +25,8 @@ public:
     static void setTime(Time time);
     static void setTime(const String timeString);
 
+    static void setZone(double offset);
+
     // Accelerate the rate at which new time passes by a multiplier
     static void setSpeed(double multiplier);
 
@@ -37,6 +39,8 @@ public:
 
     bool operator==(const Time& other) const;
     bool operator<(const Time& other) const;
+
+    bool operator<=(const Time& other) const;
     
     Time operator+(const Time& other) const;
 
@@ -47,6 +51,14 @@ public:
 private:
     time_t listToUnix(int year, int month, int day, int hour, int minute, int utcOffset=0);
     time_t stringToUnix(String timeString);
+    
+    inline static time_t toUTC(time_t original, double offset) {
+        return original - (offset * SECS_PER_HOUR);  // minus because that's how it works in timezones
+    }
+
+    inline static time_t fromUTC(time_t original, double offset) {
+        return original + (offset * SECS_PER_HOUR);
+    }
 
     inline static time_t seconds() {
         return millis() / 1000;
@@ -54,6 +66,7 @@ private:
 
     static time_t now;
     static time_t lastPolled;
+    static double utcOffset;
 };
 
 #endif

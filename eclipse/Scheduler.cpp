@@ -2,19 +2,17 @@
 #include "Time.h"
 #include "Parser.h"
 namespace Scheduler{
-namespace {
-Parser::Command perform(Time time) {
-    // Filler for now
-    const auto command = Parser::Command(
-        Parser::CommandType::Invalid,
-        (double)time.unixTime,
-        0
-    );
-    return command;
-}
 
+namespace {
 Time interval {Time::fromMinutes(0.02)};
 Time target {Time(0)};
+
+namespace Tasks {
+    Parser::Command printTime(Time time) {
+        Serial.println(time.unixTime);
+        return Parser::empty;
+    }
+}
 }
 
 void init(const String timeString, double rate=1) {
@@ -30,7 +28,7 @@ void setInterval(double minutes) {
 // Keeps pace until we reset with fetch()
 void run() {
     Time::update();
-    ready = target < Time::getNow();
+    ready = target <= Time::getNow();
 }
 
 Parser::Command fetch() {
@@ -44,7 +42,7 @@ Parser::Command fetch() {
      * the interval from when we fetch.
      */
     const auto now = Time::getNow();
-    const auto currentCommand = perform(now);
+    const auto currentCommand = Tasks::printTime(now);
     if (ready) {
         target = now + interval;
         return currentCommand;
