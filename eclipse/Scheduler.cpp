@@ -9,7 +9,9 @@ Time target {Time(0)};
 
 namespace Tasks {
     Parser::Command printTime(Time time) {
-        Serial.println(time.unixTime);
+        Serial.print(time.unixTime);
+        Serial.print(": ");
+        Serial.println(time);
         return Parser::empty;
     }
 }
