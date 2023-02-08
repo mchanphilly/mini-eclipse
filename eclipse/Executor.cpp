@@ -6,8 +6,10 @@
 #include "MotorSystem.h"
 
 namespace Executor {
+using namespace Blocker;
+
 namespace {
-Blocker::StringState state;
+StringState state;
 MotorSystem motors;
 
 inline void printPosition() {
@@ -18,23 +20,23 @@ inline void printTangential() {
     Serial.println(state.toTangential());
 }
 
-void go(Blocker::Position position) {
+void go(Lengths::Position position) {
     state.go(position);
     const auto lengths = state.toTotalLengths();
     motors.go(lengths.left, lengths.right, MotorSystem::Unit::Inch);
 }
 
-void syncMotors(Blocker::Tangential tangential) {
+void syncMotors(Lengths::Tangential tangential) {
     const auto lengths = state.toTotalLengths();
     motors.zero(lengths.left, lengths.right);
 }
 
-void softZero(Blocker::Tangential tangential) {
+void softZero(Lengths::Tangential tangential) {
     state.softZero(tangential);
     syncMotors(tangential);
 }
 
-void hardZero(Blocker::Tangential tangential) {
+void hardZero(Lengths::Tangential tangential) {
     state.hardZero(tangential);
     syncMotors(tangential);
 }
@@ -92,15 +94,15 @@ void execute(Parser::Command command) {
         break;
 
         case Parser::CommandType::SoftZero:
-        softZero(Blocker::Tangential(pair));
+        softZero(Lengths::Tangential(pair));
         break;
 
         case Parser::CommandType::HardZero:
-        hardZero(Blocker::Tangential(pair));
+        hardZero(Lengths::Tangential(pair));
         break;
 
         case Parser::CommandType::Go:
-        go(Blocker::Position(pair));
+        go(Lengths::Position(pair));
         break;
 
         case Parser::CommandType::GetPosition:
@@ -141,7 +143,7 @@ void run() {
     }
 }
 
-const Blocker::StringState& getState() {
+const StringState& getState() {
     return state;
 }
 

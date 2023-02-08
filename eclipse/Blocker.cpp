@@ -1,15 +1,11 @@
 #include "Blocker.h"
-
+#include "Lengths.h"
 #include <Arduino.h>
 #include "MotorSystem.h"
 
 namespace Blocker {
+using namespace Lengths;
 namespace {
-
-// All measurements done in inches from the contact point of the string on the spool.
-static constexpr double width {41.232};  // Distance at motor level
-static constexpr double height {55};  // Biggest permissible vertical displacement (less than longest string permitted)
-static constexpr double minHeight {6};  // Limits max torque on spool; minimum permissible vertical displacement
 
 // Assume speed limits are the same for both motors.
 static constexpr double slowFactor {0.9};
@@ -34,16 +30,6 @@ inline T getLegs(double hypotenuse1, double hypotenuse2, double altitude) {
     return T(getLeg(hypotenuse1, altitude), getLeg(hypotenuse2, altitude));
 }
 
-size_t printToPair(Print& p, double first, double second) {
-    size_t size = 0;
-    
-    size += p.print("(");
-    size += p.print(first);
-    size += p.print(", ");
-    size += p.print(second);
-    size += p.print(")");
-
-    return size;
 }
 
 GridSpeed getTrajectory(Position start, Position end) {
@@ -53,50 +39,9 @@ GridSpeed getTrajectory(Position start, Position end) {
     const double scaleFactor {gridLimit / max(delta.x, delta.y)};
     return GridSpeed{scaleFactor * delta.x, scaleFactor * delta.y};
 }
-}
-
-GridPair::GridPair(double _x, double _y)
-    : x{_x}, y{_y}
-    {}
-
-GridPair::GridPair(double pair[2])
-    : GridPair{pair[0], pair[1]}
-    {}
-
-StringPair::StringPair(double _left, double _right)
-    : left{_left}, right{_right}
-    {}
-
-StringPair::StringPair(double pair[2])
-    : StringPair{pair[0], pair[1]}
-    {}
-
-size_t GridPair::printTo(Print& p) const {
-    return p.print("GridPair: ") + printToPair(p, this->x, this->y);
-}
-
-size_t StringPair::printTo(Print& p) const {
-    return p.print("StringPair: ") + printToPair(p, this->left, this->right);
-}
 
 size_t StringState::printTo(Print& p) const {
     return this->toTangential().printTo(p);
-}
-
-double Radial::findOffset() const {
-    const double semiPerimeter = (left + right + width) / 2;
-    const double area = sqrt(semiPerimeter *
-                        (semiPerimeter - left) *
-                        (semiPerimeter - right) *
-                        (semiPerimeter - width));
-    const double offset {2 * area / width};
-
-    return offset;
-}
-
-TotalLengths::TotalLengths(Tangential tangential, ArcLength arc) {
-    left = tangential.left + arc.left;
-    right = tangential.right + arc.right;
 }
     
 StringState::StringState(Radial _radial)
