@@ -10,7 +10,6 @@ using namespace Blocker;
 
 namespace {
 StringState state;
-MotorSystem motors;
 
 inline void printPosition() {
     Serial.println(state.toPosition());
@@ -23,12 +22,12 @@ inline void printTangential() {
 void go(Lengths::Position position) {
     state.go(position);
     const auto lengths = state.toTotalLengths();
-    motors.go(lengths.left, lengths.right, MotorSystem::Unit::Inch);
+    MotorSystem::go(lengths.left, lengths.right, MotorSystem::Unit::Inch);
 }
 
 void syncMotors(Lengths::Tangential tangential) {
     const auto lengths = state.toTotalLengths();
-    motors.zero(lengths.left, lengths.right);
+    MotorSystem::zero(lengths.left, lengths.right);
 }
 
 void softZero(Lengths::Tangential tangential) {
@@ -73,17 +72,17 @@ void execute(Parser::Command command) {
 
         case Parser::CommandType::ShiftStep:
         case Parser::CommandType::ShiftInch:
-        motors.step(num1, num2, unit);
+        MotorSystem::step(num1, num2, unit);
         break;
 
         case Parser::CommandType::GoStep:
         case Parser::CommandType::GoInch:
-        motors.go(num1, num2, unit);
+        MotorSystem::go(num1, num2, unit);
         break;
 
         case Parser::CommandType::GetStep:
         // Note that this is very raw.
-        motors.getLengths(lengths, unit);
+        MotorSystem::getLengths(lengths, unit);
         //   printPair(lengths);
         Serial.println("Print lengths for GetStep not available");
         break;
@@ -130,12 +129,12 @@ void init() {
     Scheduler::setZone(startZone);
     Scheduler::setInterval(interval);
 
-    motors.init();
+    MotorSystem::init();
 }
 
 void run() {
     Scheduler::run();
-    motors.run();
+    MotorSystem::run();
     if (Scheduler::ready) {
         auto command = Scheduler::fetch();
         Serial.print("Scheduled: ");

@@ -3,17 +3,55 @@
 #include <AccelStepper.h>
 #include <assert.h>
 
-void MotorSystem::enable() {
+namespace MotorSystem {
+namespace {
+constexpr int stepXPin {2};
+constexpr int dirXPin {5};
+constexpr int stepYPin {3};
+constexpr int dirYPin {6};
+
+// Left and right
+AccelStepper steppers[2] {
+    {AccelStepper::DRIVER, stepYPin, dirYPin},
+    {AccelStepper::DRIVER, stepXPin, dirXPin}
+};
+
+constexpr int enableMotorPin {8};
+
+constexpr int stepsInMotor {200};
+constexpr int microsteps {8};
+constexpr double stepsPerRotation {stepsInMotor * microsteps};
+
+constexpr int secondsPerMinute {60};
+
+constexpr double maxRotationsPerMinute {500};
+constexpr double maxRotationsPerSecond {maxRotationsPerMinute / secondsPerMinute};
+constexpr double maxStepsPerSecond {maxRotationsPerSecond * stepsPerRotation};
+
+constexpr double rotationsPerMinute {320};
+static_assert(rotationsPerMinute <= maxRotationsPerMinute);
+constexpr double rotationsPerSecond {rotationsPerMinute / secondsPerMinute};
+
+
+// Parameters of the stepper motors.
+
+constexpr double stepRadius = {stepsPerRotation / (2*PI)};
+
+// // Parameters of the string set-up (including initial conditions)
+constexpr double inchPerRotation {2.37578};
+constexpr double stepsPerInch {stepsPerRotation / inchPerRotation};
+
+void enable() {
   steppers[1].enableOutputs();
   delay(100);  // Doesn't impact motor stuttering
 }
 
-void MotorSystem::disable() {
+void disable() {
   delay(50);
   steppers[0].disableOutputs();
 }
 
-MotorSystem::Steps MotorSystem::inputToSteps(double num1, double num2, Unit unit) {
+Steps inputToSteps(double num1, double num2, Unit unit) {
   Steps outSteps;
   switch (unit) {
     case Unit::Inch:
@@ -28,20 +66,17 @@ MotorSystem::Steps MotorSystem::inputToSteps(double num1, double num2, Unit unit
   return outSteps;
 }
 
-void MotorSystem::setSpeed(long whatSpeed) {
+void setSpeed(long whatSpeed) {
   for (auto& stepper : steppers) {
     stepper.setSpeed(whatSpeed);
   }
 }
+}
 
-MotorSystem::MotorSystem():
-  steppers{
-    {AccelStepper::DRIVER, stepYPin, dirYPin},
-    {AccelStepper::DRIVER, stepXPin, dirXPin}
-  }
-  {}
+const double stepsPerSecond {rotationsPerSecond * stepsPerRotation};
+const double inchRadius {stepRadius / stepsPerInch};
 
-void MotorSystem::run() {
+void run() {
   steppers[0].setSpeed(stepsPerSecond);
   steppers[1].setSpeed(stepsPerSecond);
 
@@ -53,7 +88,7 @@ void MotorSystem::run() {
   }
 }
 
-void MotorSystem::init() {
+void init() {
   for (auto& stepper : steppers) {
     stepper.setPinsInverted(false, false, true);
     stepper.setEnablePin(enableMotorPin);
@@ -63,7 +98,7 @@ void MotorSystem::init() {
   disable();
 }
 
-void MotorSystem::step(double leftNum, double rightNum, Unit unit) {
+void step(double leftNum, double rightNum, Unit unit) {
   auto steps = inputToSteps(leftNum, rightNum, unit);
 
   enable();
@@ -71,7 +106,7 @@ void MotorSystem::step(double leftNum, double rightNum, Unit unit) {
   steppers[1].move(-steps.right);
 }
 
-void MotorSystem::go(double leftNum, double rightNum, Unit unit) {
+void go(double leftNum, double rightNum, Unit unit) {
   // Converting to steps first
   auto steps = inputToSteps(leftNum, rightNum, unit);
 
@@ -80,13 +115,13 @@ void MotorSystem::go(double leftNum, double rightNum, Unit unit) {
   steppers[1].moveTo(-steps.right);
 }
 
-void MotorSystem::zero(double leftLength, double rightLength) {
+void zero(double leftLength, double rightLength) {
   auto steps = inputToSteps(leftLength, rightLength, Unit::Inch);
   steppers[0].setCurrentPosition(steps.left);
   steppers[1].setCurrentPosition(-steps.right);
 }
 
-void MotorSystem::getLengths(double pair[2], Unit unit) {
+void getLengths(double pair[2], Unit unit) {
   auto steps = getSteps();
   switch (unit) {
       case Unit::Inch:
@@ -101,9 +136,11 @@ void MotorSystem::getLengths(double pair[2], Unit unit) {
   }
 }
 
-MotorSystem::Steps MotorSystem::getSteps() {
+Steps getSteps() {
   Steps steps;
   steps.left = steppers[0].currentPosition();
   steps.right = steppers[1].currentPosition();
   return steps;
+}
+
 }

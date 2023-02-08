@@ -10,7 +10,7 @@ namespace {
 // Assume speed limits are the same for both motors.
 static constexpr double slowFactor {0.9};
 static_assert(0 < slowFactor && slowFactor <= 1);
-static constexpr double gridLimit {slowFactor / sqrt(2) * MotorSystem::stepsPerSecond};
+static const double gridLimit {slowFactor / sqrt(2) * MotorSystem::stepsPerSecond};
 
 inline double getHypotenuse(double leg, double altitude) {
     return sqrt(sq(leg) + sq(altitude));
