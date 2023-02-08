@@ -13,17 +13,19 @@ void MotorSystem::disable() {
   steppers[0].disableOutputs();
 }
 
-void MotorSystem::inputToSteps(long* outSteps, double num1, double num2, Unit unit) {
+MotorSystem::Steps MotorSystem::inputToSteps(double num1, double num2, Unit unit) {
+  Steps outSteps;
   switch (unit) {
     case Unit::Inch:
-        outSteps[0] = lround(stepsPerInch * num1);
-        outSteps[1] = lround(stepsPerInch * num2);
+        outSteps.left = lround(stepsPerInch * num1);
+        outSteps.right = lround(stepsPerInch * num2);
         break;
     case Unit::Step:
-        outSteps[0] = (long)num1;
-        outSteps[1] = (long)num2;
+        outSteps.left = (long)num1;
+        outSteps.right = (long)num2;
         break;
   }
+  return outSteps;
 }
 
 void MotorSystem::setSpeed(long whatSpeed) {
@@ -40,6 +42,9 @@ MotorSystem::MotorSystem():
   {}
 
 void MotorSystem::run() {
+  steppers[0].setSpeed(stepsPerSecond);
+  steppers[1].setSpeed(stepsPerSecond);
+
   steppers[0].runSpeedToPosition();
   steppers[1].runSpeedToPosition();
   
@@ -59,45 +64,46 @@ void MotorSystem::init() {
 }
 
 void MotorSystem::step(double leftNum, double rightNum, Unit unit) {
+  auto steps = inputToSteps(leftNum, rightNum, unit);
+
   enable();
-
-  long outSteps[2];
-  inputToSteps(outSteps, leftNum, rightNum, unit);
-  lengths[0] += outSteps[0];
-  lengths[1] += outSteps[1];
-
-  steppers[0].move(outSteps[0]);
-  steppers[0].setSpeed(stepsPerSecond);
-  steppers[1].move(-outSteps[1]);
-  steppers[1].setSpeed(stepsPerSecond);
+  steppers[0].move(steps.left);
+  steppers[1].move(-steps.right);
 }
 
 void MotorSystem::go(double leftNum, double rightNum, Unit unit) {
   // Converting to steps first
-  long desiredPosition[2];
-  inputToSteps(desiredPosition, leftNum, rightNum, unit);
+  auto steps = inputToSteps(leftNum, rightNum, unit);
 
-  // See what we need to do to get there from where we are.
-  long leftToGo = desiredPosition[0] - lengths[0];
-  long rightToGo = desiredPosition[1] - lengths[1];
-
-  step(leftToGo, rightToGo, Unit::Step);
+  enable();
+  steppers[0].moveTo(steps.left);
+  steppers[1].moveTo(-steps.right);
 }
 
 void MotorSystem::zero(double leftLength, double rightLength) {
-  inputToSteps(lengths, leftLength, rightLength, Unit::Inch);
+  auto steps = inputToSteps(leftLength, rightLength, Unit::Inch);
+  steppers[0].setCurrentPosition(steps.left);
+  steppers[1].setCurrentPosition(-steps.right);
 }
 
 void MotorSystem::getLengths(double pair[2], Unit unit) {
+  auto steps = getSteps();
   switch (unit) {
       case Unit::Inch:
-        pair[0] = lengths[0] / stepsPerInch;
-        pair[1] = lengths[1] / stepsPerInch;
+        pair[0] = steps.left / stepsPerInch;
+        pair[1] = steps.right / stepsPerInch;
         break;
       case Unit::Step:
         // TODO I'm sure there's a better way to write this.
-        pair[0] = lengths[0];
-        pair[1] = lengths[1];
+        pair[0] = steps.left;
+        pair[1] = steps.right;
         break;
   }
+}
+
+MotorSystem::Steps MotorSystem::getSteps() {
+  Steps steps;
+  steps.left = steppers[0].currentPosition();
+  steps.right = steppers[1].currentPosition();
+  return steps;
 }

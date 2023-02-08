@@ -14,6 +14,11 @@ public:
     Inch
   };
 
+  struct Steps {
+    long left {0};
+    long right {0};
+  };
+
   MotorSystem();
 
   void run();
@@ -50,6 +55,8 @@ public:
 
   void getLengths(double pair[2], Unit unit);
 
+  Steps getSteps();
+
 private:
   // left and right
   AccelStepper steppers[2];
@@ -84,13 +91,13 @@ private:
   static constexpr double stepsPerInch {stepsPerRotation / inchPerRotation};
 
   // String position in steps offset from the horizontal position, not tangential or radial length.
-  long int lengths[2];
+  // long int lengths[2];
 
   void enable();
 
   void disable();
 
-  void inputToSteps(long* outSteps, double num1, double num2, Unit unit);
+  Steps inputToSteps(double num1, double num2, Unit unit);
 
   void setSpeed(long whatSpeed);
   
