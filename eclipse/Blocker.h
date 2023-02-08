@@ -10,17 +10,25 @@
  */
 namespace Blocker {
 
-struct Position : public Printable {
+struct GridPair : public Printable {
     double x {0};
     double y {0};
 
-    Position() = default;
+    GridPair() = default;
 
-    Position(double pair[2]);
+    GridPair(double pair[2]);
 
-    Position(double _x, double _y);
+    GridPair(double _x, double _y);
 
     size_t printTo(Print& p) const;
+};
+
+struct Position : public GridPair {
+    using GridPair::GridPair;
+};
+
+struct GridSpeed : public GridPair {
+    using GridPair::GridPair;
 };
 
 struct StringPair : public Printable {
@@ -77,6 +85,10 @@ struct Angle : public StringPair {
 struct TotalLengths : public StringPair {
     using StringPair::StringPair;
     TotalLengths(Tangential tangential, ArcLength arc);
+};
+
+struct StringSpeed : public StringPair {
+    using StringPair::StringPair;
 };
 
 class StringState : public Printable {

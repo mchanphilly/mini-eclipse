@@ -42,12 +42,12 @@ size_t printToPair(Print& p, double first, double second) {
 }
 }
 
-Position::Position(double _x, double _y)
+GridPair::GridPair(double _x, double _y)
     : x{_x}, y{_y}
     {}
 
-Position::Position(double pair[2])
-    : Position{pair[0], pair[1]}
+GridPair::GridPair(double pair[2])
+    : GridPair{pair[0], pair[1]}
     {}
 
 StringPair::StringPair(double _left, double _right)
@@ -58,8 +58,8 @@ StringPair::StringPair(double pair[2])
     : StringPair{pair[0], pair[1]}
     {}
 
-size_t Position::printTo(Print& p) const {
-    return p.print("Position: ") + printToPair(p, this->x, this->y);
+size_t GridPair::printTo(Print& p) const {
+    return p.print("GridPair: ") + printToPair(p, this->x, this->y);
 }
 
 size_t StringPair::printTo(Print& p) const {
