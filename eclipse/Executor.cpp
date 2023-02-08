@@ -7,39 +7,35 @@
 
 namespace Executor {
 namespace {
-Blocker blocker;
+Blocker::StringState state;
 MotorSystem motors;
 
 inline void printPosition() {
-    Serial.println(blocker.getStringState().toPosition());
+    Serial.println(state.toPosition());
 }
 
 inline void printTangential() {
-    Serial.println(blocker.getStringState().toTangential());
+    Serial.println(state.toTangential());
 }
 
 void go(Blocker::Position position) {
-    blocker.update(position);
-    const auto state = blocker.getStringState();
+    state.update(position);
     const auto lengths = state.toTotalLengths();
-
     motors.go(lengths.left, lengths.right, MotorSystem::Unit::Inch);
 }
 
 void syncMotors(Blocker::Tangential tangential) {
-    const auto state = blocker.getStringState();
     const auto lengths = state.toTotalLengths();
-
     motors.zero(lengths.left, lengths.right);
 }
 
 void softZero(Blocker::Tangential tangential) {
-    blocker.softZero(tangential);
+    state.softZero(tangential);
     syncMotors(tangential);
 }
 
 void hardZero(Blocker::Tangential tangential) {
-    blocker.hardZero(tangential);
+    state.hardZero(tangential);
     syncMotors(tangential);
 }
 }
@@ -146,7 +142,7 @@ void run() {
 }
 
 const Blocker::StringState& getState() {
-    return blocker.getStringState();
+    return state;
 }
 
 }
