@@ -19,7 +19,7 @@ inline void printTangential() {
 }
 
 void go(Blocker::Position position) {
-    state.update(position);
+    state.go(position);
     const auto lengths = state.toTotalLengths();
     motors.go(lengths.left, lengths.right, MotorSystem::Unit::Inch);
 }

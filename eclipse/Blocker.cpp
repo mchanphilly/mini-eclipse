@@ -11,6 +11,11 @@ static constexpr double width {41.232};  // Distance at motor level
 static constexpr double height {55};  // Biggest permissible vertical displacement (less than longest string permitted)
 static constexpr double minHeight {6};  // Limits max torque on spool; minimum permissible vertical displacement
 
+// Assume speed limits are the same for both motors.
+static constexpr double slowFactor {0.9};
+static_assert(0 < slowFactor && slowFactor <= 1);
+static constexpr double gridLimit {slowFactor / sqrt(2) * MotorSystem::stepsPerSecond};
+
 inline double getHypotenuse(double leg, double altitude) {
     return sqrt(sq(leg) + sq(altitude));
 };
@@ -39,6 +44,14 @@ size_t printToPair(Print& p, double first, double second) {
     size += p.print(")");
 
     return size;
+}
+
+GridSpeed getTrajectory(Position start, Position end) {
+    // Might be abuse of notation unless you consider Position as a vector
+    const Position delta {end - start};
+    // Scale so that the bigger component moves at max grid speed.
+    const double scaleFactor {gridLimit / max(delta.x, delta.y)};
+    return GridSpeed{scaleFactor * delta.x, scaleFactor * delta.y};
 }
 }
 
@@ -97,9 +110,20 @@ StringState::StringState(Tangential _tangential) {
 }
 
 
-void StringState::update(Position _position) {
+void StringState::go(Position _position) {
+    /**
+     * @brief Do two things:
+     * - Update gridSpeed to what we need it to be
+     * - Update radial to the new position. (!!! issue)
+     *  TODO figure out how to synchronize Blocker position
+     *  and MotorSystem's position; prob with AccelStepper or MotorSystem
+     *  tracker
+     * 
+     */
+    // const auto start = this->toPosition();
     const auto currentOffset =  _position.y + originOffset;
     radial = getHypotenuses<Radial>(_position.x, width - _position.x, currentOffset);
+    // Get trajectory too
 }
 
 void StringState::softZero(Tangential tangential) {
@@ -114,6 +138,20 @@ void StringState::hardZero(Tangential tangential) {
     originOffset = tempState.originOffset;
 }
 
+StringSpeed StringState::getSpeed() const {
+    // Expects that the speed variable is updated for current trajectory.
+    auto position = this->toTruePosition();
+    auto tangential = this->toTangential();
+    const auto rateFactor = position.x * speed.x + position.y * speed.y;
+
+    const StringSpeed stringSpeed {
+        rateFactor / tangential.left,
+        (rateFactor - width * speed.x) / tangential.right
+    };
+
+    return stringSpeed;
+}
+
 Radial StringState::toRadial() const {
     return radial;
 }
@@ -124,20 +162,26 @@ Tangential StringState::toTangential() const {
 }
 
 Position StringState::toPosition() const {
+    const auto truePosition = this->toTruePosition();
+    return Position{truePosition.x, truePosition.y - originOffset};
+}
+
+TruePosition StringState::toTruePosition() const {
     const double currentOffset = radial.findOffset();
     // Note that this assumes about the coordinate system.
     const double x = getLeg(radial.left, currentOffset);
-    const double y = currentOffset - originOffset;
-    return Position(x, y);
+    const double y = currentOffset;
+    return TruePosition(x, y);
 }
 
 TotalLengths StringState::toTotalLengths() const {
-    auto position = this->toPosition();
-    const double x {position.x};
-    const double y {position.y + originOffset};  // True y
+    auto position = this->toTruePosition();
 
     // y should always be positive
-    const Angle vertical {atan(x/y), atan((width - x)/y)};
+    const Angle vertical {
+        atan(position.x/position.y),
+        atan((width - position.x)/position.y)
+    };
 
     // Angle between radial and the radius connected to tangent
     const double r {MotorSystem::inchRadius};

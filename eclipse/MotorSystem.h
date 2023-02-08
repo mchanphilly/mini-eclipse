@@ -74,7 +74,6 @@ private:
   static_assert(rotationsPerMinute <= maxRotationsPerMinute);
   static constexpr double rotationsPerSecond {rotationsPerMinute / secondsPerMinute};
 
-  static constexpr double stepsPerSecond {rotationsPerSecond * stepsPerRotation};
 
   // Parameters of the stepper motors.
 
@@ -97,6 +96,7 @@ private:
   
 // Would've preferred to have all the public things together, but this depends on private variables.
 public:
+  static constexpr double stepsPerSecond {rotationsPerSecond * stepsPerRotation};
   static constexpr double inchRadius {stepRadius / stepsPerInch};
 };
 

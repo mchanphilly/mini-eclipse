@@ -27,6 +27,14 @@ struct Position : public GridPair {
     using GridPair::GridPair;
 };
 
+inline Position operator-(Position first, Position second) {
+    return Position{second.x - first.x, second.y - first.y};
+}
+
+struct TruePosition : public GridPair {
+    using GridPair::GridPair;
+};
+
 struct GridSpeed : public GridPair {
     using GridPair::GridPair;
 };
@@ -99,30 +107,35 @@ public:
 
     StringState(Tangential _tangential);
 
-    // Note that we don't yet update origin.
-    // StringState(Position _position);
+    // No StringState(Position) because insufficient information (origin?)
 
-    void update(Position _position);
+    void go(Position _position);
 
     void softZero(Tangential tangential);
 
     void hardZero(Tangential tangential);
 
+    StringSpeed getSpeed() const;
+
     Radial toRadial() const;
 
     Tangential toTangential() const;
 
-    Position toPosition() const;
+    Position toPosition() const;  // Uses declared origin as origin
 
     TotalLengths toTotalLengths() const;
 
     size_t printTo(Print& p) const;
 
 private:
+    TruePosition toTruePosition() const;  // Uses center of left spool as origin
+
     // Choosing radial for the internal representation.
-    Radial radial;
-    double originOffset;  // vertical offset from declared origin
+    Radial radial{0, 0};  // For current configuration
+    GridSpeed speed{0, 0};  // For current trajectory; changes with 'go' call
+    double originOffset{10};  // vertical offset from declared origin
 };
+
 }
 
 #endif
