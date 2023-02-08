@@ -124,19 +124,12 @@ void zero(double leftLength, double rightLength) {
   steppers[1].setCurrentPosition(-steps.right);
 }
 
-void getLengths(double pair[2], Unit unit) {
+TotalLengths getLengths() {
+  TotalLengths lengths;
   auto steps = getSteps();
-  switch (unit) {
-      case Unit::Inch:
-        pair[0] = steps.left / stepsPerInch;
-        pair[1] = steps.right / stepsPerInch;
-        break;
-      case Unit::Step:
-        // TODO I'm sure there's a better way to write this.
-        pair[0] = steps.left;
-        pair[1] = steps.right;
-        break;
-  }
+  lengths.left = static_cast<double>(steps.left) / stepsPerInch;
+  lengths.right = -static_cast<double>(steps.right) / stepsPerInch;  // Note negative
+  return lengths;
 }
 
 Steps getSteps() {

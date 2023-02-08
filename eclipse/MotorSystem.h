@@ -58,7 +58,7 @@ void go(double leftNum, double rightNum, Unit unit);
  */
 void zero(double leftLength, double rightLength);
 
-void getLengths(double pair[2], Unit unit);
+TotalLengths getLengths();
 
 Steps getSteps();
 

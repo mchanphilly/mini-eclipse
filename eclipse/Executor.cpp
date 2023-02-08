@@ -99,8 +99,8 @@ void execute(Parser::Command command) {
         break;
 
         case Parser::CommandType::GetInch:
-        // Note that this does NOT include the arc
-        printTangential();
+        // Note that this DOES include the arc
+        Serial.println(MotorSystem::getLengths());
         break;
 
         case Parser::CommandType::SoftZero:
