@@ -4,7 +4,6 @@
 
 namespace Lengths {
 
-namespace {
 size_t printToPair(Print& p, double first, double second) {
     size_t size = 0;
     
@@ -15,7 +14,6 @@ size_t printToPair(Print& p, double first, double second) {
     size += p.print(")");
 
     return size;
-}
 }
 
 GridPair::GridPair(double _x, double _y)

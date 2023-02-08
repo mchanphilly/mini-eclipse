@@ -102,6 +102,8 @@ struct StringSpeed : public StringPair {
     using StringPair::StringPair;
 };
 
+size_t printToPair(Print& p, double first, double second);
+
 }
 
 #endif

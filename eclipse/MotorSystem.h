@@ -2,11 +2,12 @@
 #define MotorSystem_h
 
 #include <AccelStepper.h>
-#include <assert.h>
+#include "Lengths.h"
 
 // Used as a wrapper for the Stepper, but with some added
 // features.
 namespace MotorSystem {
+using namespace Lengths;
 
 enum class Unit {
   Invalid,
@@ -14,10 +15,16 @@ enum class Unit {
   Inch
 };
 
-struct Steps {
+struct Steps : public Printable {
   long left {0};
   long right {0};
+
+  inline size_t printTo(Print& p) const {
+    return p.print("Steps: ") + printToPair(p, left, right);
+  }
 };
+
+void run(StringSpeed speed);
 
 void run();
 
@@ -57,6 +64,7 @@ Steps getSteps();
 
 extern const double stepsPerSecond;
 extern const double inchRadius;
+
 }
 
 #endif

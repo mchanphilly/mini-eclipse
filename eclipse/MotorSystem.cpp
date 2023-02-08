@@ -1,9 +1,10 @@
 #include "MotorSystem.h"
 
 #include <AccelStepper.h>
-#include <assert.h>
+#include "Lengths.h"
 
 namespace MotorSystem {
+using namespace Lengths;
 namespace {
 constexpr int stepXPin {2};
 constexpr int dirXPin {5};
@@ -15,6 +16,7 @@ AccelStepper steppers[2] {
     {AccelStepper::DRIVER, stepYPin, dirYPin},
     {AccelStepper::DRIVER, stepXPin, dirXPin}
 };
+StringSpeed lastSpeed;
 
 constexpr int enableMotorPin {8};
 
@@ -66,19 +68,15 @@ Steps inputToSteps(double num1, double num2, Unit unit) {
   return outSteps;
 }
 
-void setSpeed(long whatSpeed) {
-  for (auto& stepper : steppers) {
-    stepper.setSpeed(whatSpeed);
-  }
-}
 }
 
 const double stepsPerSecond {rotationsPerSecond * stepsPerRotation};
 const double inchRadius {stepRadius / stepsPerInch};
 
-void run() {
-  steppers[0].setSpeed(stepsPerSecond);
-  steppers[1].setSpeed(stepsPerSecond);
+void run(StringSpeed speed) {
+  lastSpeed = speed;
+  steppers[0].setSpeed(speed.left);
+  steppers[1].setSpeed(speed.right);
 
   steppers[0].runSpeedToPosition();
   steppers[1].runSpeedToPosition();
@@ -88,11 +86,16 @@ void run() {
   }
 }
 
+void run() {
+    run(lastSpeed);
+}
+
 void init() {
   for (auto& stepper : steppers) {
     stepper.setPinsInverted(false, false, true);
     stepper.setEnablePin(enableMotorPin);
     stepper.setMaxSpeed(maxStepsPerSecond);
+    stepper.setSpeed(0);
   }
 
   disable();

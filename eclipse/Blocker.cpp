@@ -65,6 +65,8 @@ void StringState::go(Position _position) {
      *  tracker
      * 
      */
+    speed = GridSpeed(gridLimit, gridLimit);
+    // speed = getTrajectory(this->toPosition(), _position);
     // const auto start = this->toPosition();
     const auto currentOffset =  _position.y + originOffset;
     radial = getHypotenuses<Radial>(_position.x, width - _position.x, currentOffset);

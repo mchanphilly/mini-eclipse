@@ -39,6 +39,19 @@ void hardZero(Lengths::Tangential tangential) {
     state.hardZero(tangential);
     syncMotors(tangential);
 }
+
+int counter {0};
+const int pace {10000};
+void runMotors() {
+    // counter = (counter + 1) % pace;
+    StringSpeed newSpeed = state.getSpeed();
+
+    // if (counter == 0) {
+        MotorSystem::run(newSpeed);
+    // } else {
+    //     MotorSystem::run();
+    // }
+}
 }
 
 void execute(Parser::Command command) {
@@ -82,9 +95,7 @@ void execute(Parser::Command command) {
 
         case Parser::CommandType::GetStep:
         // Note that this is very raw.
-        MotorSystem::getLengths(lengths, unit);
-        //   printPair(lengths);
-        Serial.println("Print lengths for GetStep not available");
+        Serial.println(MotorSystem::getSteps());
         break;
 
         case Parser::CommandType::GetInch:
@@ -134,7 +145,9 @@ void init() {
 
 void run() {
     Scheduler::run();
-    MotorSystem::run();
+
+    runMotors();
+    
     if (Scheduler::ready) {
         auto command = Scheduler::fetch();
         Serial.print("Scheduled: ");
