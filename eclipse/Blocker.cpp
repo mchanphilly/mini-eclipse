@@ -3,35 +3,74 @@
 #include <Arduino.h>
 #include "MotorSystem.h"
 
-Blocker::Position::Position(double _x, double _y)
+namespace Blocker {
+namespace {
+
+// All measurements done in inches from the contact point of the string on the spool.
+static constexpr double width {41.232};  // Distance at motor level
+static constexpr double height {55};  // Biggest permissible vertical displacement (less than longest string permitted)
+static constexpr double minHeight {6};  // Limits max torque on spool; minimum permissible vertical displacement
+
+inline double getHypotenuse(double leg, double altitude) {
+    return sqrt(sq(leg) + sq(altitude));
+};
+
+inline double getLeg(double hypotenuse, double leg) {
+    return sqrt(sq(hypotenuse) - sq(leg));
+}
+
+template<class T>
+inline T getHypotenuses(double leg1, double leg2, double altitude) {
+    return T(getHypotenuse(leg1, altitude), getHypotenuse(leg2, altitude));
+}
+
+template<class T>
+inline T getLegs(double hypotenuse1, double hypotenuse2, double altitude) {
+    return T(getLeg(hypotenuse1, altitude), getLeg(hypotenuse2, altitude));
+}
+
+size_t printToPair(Print& p, double first, double second) {
+    size_t size = 0;
+    
+    size += p.print("(");
+    size += p.print(first);
+    size += p.print(", ");
+    size += p.print(second);
+    size += p.print(")");
+
+    return size;
+}
+}
+
+Position::Position(double _x, double _y)
     : x{_x}, y{_y}
     {}
 
-Blocker::Position::Position(double pair[2])
+Position::Position(double pair[2])
     : Position{pair[0], pair[1]}
     {}
 
-Blocker::StringPair::StringPair(double _left, double _right)
+StringPair::StringPair(double _left, double _right)
     : left{_left}, right{_right}
     {}
 
-Blocker::StringPair::StringPair(double pair[2])
+StringPair::StringPair(double pair[2])
     : StringPair{pair[0], pair[1]}
     {}
 
-size_t Blocker::Position::printTo(Print& p) const {
+size_t Position::printTo(Print& p) const {
     return p.print("Position: ") + printToPair(p, this->x, this->y);
 }
 
-size_t Blocker::StringPair::printTo(Print& p) const {
+size_t StringPair::printTo(Print& p) const {
     return p.print("StringPair: ") + printToPair(p, this->left, this->right);
 }
 
-size_t Blocker::StringState::printTo(Print& p) const {
+size_t StringState::printTo(Print& p) const {
     return this->toTangential().printTo(p);
 }
 
-double Blocker::Radial::findOffset() const {
+double Radial::findOffset() const {
     const double semiPerimeter = (left + right + width) / 2;
     const double area = sqrt(semiPerimeter *
                         (semiPerimeter - left) *
@@ -42,49 +81,49 @@ double Blocker::Radial::findOffset() const {
     return offset;
 }
 
-Blocker::TotalLengths::TotalLengths(Tangential tangential, ArcLength arc) {
+TotalLengths::TotalLengths(Tangential tangential, ArcLength arc) {
     left = tangential.left + arc.left;
     right = tangential.right + arc.right;
 }
     
-Blocker::StringState::StringState(Radial _radial)
+StringState::StringState(Radial _radial)
     : radial{_radial}, originOffset{_radial.findOffset()}
     {}
 
-Blocker::StringState::StringState(Tangential _tangential) {
+StringState::StringState(Tangential _tangential) {
     const auto radius = MotorSystem::inchRadius;
     radial = getHypotenuses<Radial>(_tangential.left, _tangential.right, radius);
     originOffset = radial.findOffset();
 }
 
 
-void Blocker::StringState::update(Position _position) {
+void StringState::update(Position _position) {
     const auto currentOffset =  _position.y + originOffset;
     radial = getHypotenuses<Radial>(_position.x, width - _position.x, currentOffset);
 }
 
-void Blocker::StringState::softZero(Tangential tangential) {
+void StringState::softZero(Tangential tangential) {
     const auto tempState = StringState(tangential);
     radial = tempState.toRadial();
 }
 
-void Blocker::StringState::hardZero(Tangential tangential) {
+void StringState::hardZero(Tangential tangential) {
     const auto tempState = StringState(tangential);
     // Must be a better way than this;
     radial = tempState.radial;
     originOffset = tempState.originOffset;
 }
 
-Blocker::Radial Blocker::StringState::toRadial() const {
+Radial StringState::toRadial() const {
     return radial;
 }
 
-Blocker::Tangential Blocker::StringState::toTangential() const {
+Tangential StringState::toTangential() const {
     const auto radius = MotorSystem::inchRadius;
     return getLegs<Tangential>(radial.left, radial.right, radius);
 }
 
-Blocker::Position Blocker::StringState::toPosition() const {
+Position StringState::toPosition() const {
     const double currentOffset = radial.findOffset();
     // Note that this assumes about the coordinate system.
     const double x = getLeg(radial.left, currentOffset);
@@ -92,7 +131,7 @@ Blocker::Position Blocker::StringState::toPosition() const {
     return Position(x, y);
 }
 
-Blocker::TotalLengths Blocker::StringState::toTotalLengths() const {
+TotalLengths StringState::toTotalLengths() const {
     auto position = this->toPosition();
     const double x {position.x};
     const double y {position.y + originOffset};  // True y
@@ -110,32 +149,4 @@ Blocker::TotalLengths Blocker::StringState::toTotalLengths() const {
 
     return TotalLengths{this->toTangential(), arc};
 }
-
-void Blocker::update(Position position) {
-    state.update(position);
-}
-
-const Blocker::StringState& Blocker::getStringState() const {
-    return state;
-}
-
-void Blocker::hardZero(Tangential tangential) {
-    state.hardZero(tangential);
-}
-
-// Updates state to contain the right string coordinates without impacting origin
-void Blocker::softZero(Tangential tangential) {
-    state.softZero(tangential);
-}
-
-size_t printToPair(Print& p, double first, double second) {
-    size_t size = 0;
-    
-    size += p.print("(");
-    size += p.print(first);
-    size += p.print(", ");
-    size += p.print(second);
-    size += p.print(")");
-
-    return size;
 }
