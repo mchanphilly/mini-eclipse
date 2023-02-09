@@ -51,7 +51,7 @@ struct TotalLengths;
 struct Position : public GridPair {
     using GridPair::GridPair;
 
-    // double offset {10};  // be sure to reassign
+    Position(TotalLengths lengths, double offset);
 };
 
 inline Position operator-(Position first, Position second) {
@@ -60,6 +60,8 @@ inline Position operator-(Position first, Position second) {
 
 struct TruePosition : public GridPair {
     using GridPair::GridPair;
+
+    TruePosition(TotalLengths lengths);
 };
 
 struct GridSpeed : public GridPair {
@@ -82,6 +84,7 @@ struct Radial : public StringPair {
 
     Radial(Tangential tangential);
     // Radial(Position position);
+    Radial(TotalLengths lengths);
 };
 
 struct Tangential : public StringPair {
@@ -89,6 +92,7 @@ struct Tangential : public StringPair {
 
     Tangential(Radial radial);
     // Tangential(Position position);
+    Tangential(TotalLengths lengths);
 };
 
 struct ArcLength : public StringPair {

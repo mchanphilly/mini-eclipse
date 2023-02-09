@@ -9,21 +9,13 @@ static constexpr bool verbose = true;
 static constexpr int enableMotorPin {8};
 const auto initialStrings = Blocker::Tangential(double(8), double(42));
 
-const auto initialCommand = Parser::Command(
-  Parser::CommandType::HardZero,
-  "",
-  initialStrings.left,
-  initialStrings.right
-);
-
 String string;
 
 void setup() {
   pinMode(enableMotorPin, OUTPUT);
   Serial.begin(9600);
 
-  Executor::init();
-  Executor::execute(initialCommand);
+  Executor::init(initialStrings);
   Serial.println(Executor::getState());
   }
 

@@ -13,7 +13,7 @@ void run(StringSpeed speed);
 
 void run();
 
-void init();
+void init(Tangential tangential);
 
 /**
  * @brief Command the motors to step a certain number of steps
@@ -45,6 +45,12 @@ void zero(TotalLengths lengths);
 TotalLengths getLengths();
 
 Steps getSteps();
+
+Position getPosition();
+
+Radial getRadial();
+
+Tangential getTangential();
 
 extern const double stepsPerSecond;
 }

@@ -2,10 +2,11 @@
 #define Executor_h
 
 #include "Blocker.h"
+#include "Lengths.h"
 #include "Parser.h"
 
 namespace Executor {
-    void init();
+    void init(Lengths::Tangential tangential);
 
     void run();
 

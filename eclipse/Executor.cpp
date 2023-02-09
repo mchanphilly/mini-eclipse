@@ -116,7 +116,7 @@ void execute(Parser::Command command) {
     }
 }
 
-void init() {
+void init(Tangential tangential) {
     // const String startTime = "2023.02.06 19:52 -5";
     const String startTime = "1970.01.01 05:00";
     constexpr double startZone = -5;
@@ -127,7 +127,8 @@ void init() {
     Scheduler::setZone(startZone);
     Scheduler::setInterval(interval);
 
-    MotorSystem::init();
+    hardZero(tangential);
+    MotorSystem::init(tangential);
 }
 
 void run() {

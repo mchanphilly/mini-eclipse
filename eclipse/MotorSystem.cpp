@@ -17,6 +17,7 @@ AccelStepper steppers[2] {
     {AccelStepper::DRIVER, stepXPin, dirXPin}
 };
 StringSpeed lastSpeed;
+double originOffset {10};  // in inches
 
 constexpr int enableMotorPin {8};
 
@@ -80,7 +81,7 @@ void run() {
     run(lastSpeed);
 }
 
-void init() {
+void init(Tangential tangential) {
   for (auto& stepper : steppers) {
     stepper.setPinsInverted(false, false, true);
     stepper.setEnablePin(enableMotorPin);
@@ -89,6 +90,9 @@ void init() {
   }
 
   disable();
+
+  const auto radial = Radial(tangential);
+  originOffset = radial.findOffset();
 }
 
 void step(TotalLengths lengths) {
@@ -135,4 +139,15 @@ Steps getSteps() {
   return steps;
 }
 
+Position getPosition() {
+  return Position(getLengths(), originOffset);
+}
+
+Radial getRadial() {
+  return Radial(getLengths());
+}
+
+Tangential getTangential() {
+  return Tangential(getLengths());
+}
 }

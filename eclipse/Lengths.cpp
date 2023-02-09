@@ -51,13 +51,36 @@ StringPair::StringPair(double pair[2])
     : StringPair{pair[0], pair[1]}
     {}
 
+Position::Position(TotalLengths lengths, double offset) {
+    const auto truePosition = TruePosition(lengths);
+    x = truePosition.x;
+    y = truePosition.y - offset;
+}
+
+TruePosition::TruePosition(TotalLengths lengths) {
+    const auto radial = Radial(lengths);
+    const double trueOffset = radial.findOffset();
+    x = getLeg(radial.left, trueOffset);
+    y = trueOffset;
+}
+
 // todo refactor
-Radial::Radial(Tangential tangential)
+Radial::Radial(Tangential tangential)  // Can alternatively use the same approximation todo
     : Radial(getHypotenuses<Radial>(tangential.left, tangential.right, radius))
+    {}
+
+Radial::Radial(TotalLengths lengths)
+    : Radial(Tangential(lengths))  // Could probably be better
     {}
 
 Tangential::Tangential(Radial radial)
     : Tangential(getLegs<Tangential>(radial.left, radial.right, radius))
+    {}
+
+// Approximate until I can find the analytic inverse or a better approximation.
+// Off by at most radius * pi/4 (an eighth of a circle)
+Tangential::Tangential(TotalLengths lengths)
+    : Tangential(lengths.left - radius * PI/4, lengths.right - radius * PI/4)
     {}
 
 Steps::Steps(long _left, long _right)
