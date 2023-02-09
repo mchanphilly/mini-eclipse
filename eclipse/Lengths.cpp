@@ -33,6 +33,7 @@ template<class T>
 inline T getLegs(double hypotenuse1, double hypotenuse2, double altitude) {
     return T(getLeg(hypotenuse1, altitude), getLeg(hypotenuse2, altitude));
 }
+
 }
 
 GridPair::GridPair(double _x, double _y)
@@ -51,26 +52,29 @@ StringPair::StringPair(double pair[2])
     : StringPair{pair[0], pair[1]}
     {}
 
-Position::Position(TotalLengths lengths, double offset) {
-    const auto truePosition = TruePosition(lengths);
-    x = truePosition.x;
-    y = truePosition.y - offset;
-}
-
-TruePosition::TruePosition(TotalLengths lengths) {
-    const auto radial = Radial(lengths);
-    const double trueOffset = radial.findOffset();
-    x = getLeg(radial.left, trueOffset);
-    y = trueOffset;
-}
-
-// todo refactor
-Radial::Radial(Tangential tangential)  // Can alternatively use the same approximation todo
-    : Radial(getHypotenuses<Radial>(tangential.left, tangential.right, radius))
+Position::Position(TruePosition truePosition, double offset)
+    : Position(truePosition.x, truePosition.y - offset)
     {}
 
-Radial::Radial(TotalLengths lengths)
-    : Radial(Tangential(lengths))  // Could probably be better
+TruePosition::TruePosition(Position position, double offset)
+    : TruePosition(position.x, position.y + offset)
+    {}
+
+// Just a helper
+TruePosition::TruePosition(Radial radial, double offset)
+    : TruePosition(getLeg(radial.left, offset), offset)
+    {}
+
+TruePosition::TruePosition(Radial radial)
+    : TruePosition(radial, radial.findOffset())
+    {}
+
+Radial::Radial(TruePosition truePosition)
+    : Radial(getHypotenuses<Radial>(truePosition.x, width - truePosition.x, truePosition.y))
+    {}
+
+Radial::Radial(Tangential tangential)  // Can alternatively use the same approximation todo
+    : Radial(getHypotenuses<Radial>(tangential.left, tangential.right, radius))
     {}
 
 Tangential::Tangential(Radial radial)
@@ -79,9 +83,31 @@ Tangential::Tangential(Radial radial)
 
 // Approximate until I can find the analytic inverse or a better approximation.
 // Off by at most radius * pi/4 (an eighth of a circle)
+// TODO change from approximate
 Tangential::Tangential(TotalLengths lengths)
     : Tangential(lengths.left - radius * PI/4, lengths.right - radius * PI/4)
     {}
+
+// Frankly all three of the arguments are able to be gotten from the others, but 
+// we have this because sometimes we convert differently TODO remove?
+TotalLengths::TotalLengths(TruePosition truePosition, Radial radial, Tangential tangential) {
+    // y should always be positive
+    const Angle vertical {
+        atan(truePosition.x/truePosition.y),
+        atan((width - truePosition.x)/truePosition.y)
+    };
+
+    // Angle between radial and the radius connected to tangent
+    const double r {Lengths::radius};
+    const Angle tangentRadial {acos(r/radial.left), acos(r/radial.right)};
+    const Angle starter{PI/2, PI/2};
+    const Angle offset = starter - (tangentRadial - vertical);
+
+    const ArcLength arc = offset.toArcLength(r);
+
+    left = tangential.left + arc.left;
+    right = tangential.right + arc.right;
+}
 
 Steps::Steps(long _left, long _right)
     : left{_left}, right{_right}
@@ -119,5 +145,11 @@ TotalLengths::TotalLengths(Tangential tangential, ArcLength arc) {
     left = tangential.left + arc.left;
     right = tangential.right + arc.right;
 }
+
+// // TODO change from approximation
+// TotalLengths::TotalLengths(Position position) {
+//     const TruePosition truePosition(position);
+//     const Radial radial(truePosition);
+//     const Tangential tangential(radial);
 
 }

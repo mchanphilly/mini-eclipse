@@ -17,7 +17,6 @@ AccelStepper steppers[2] {
     {AccelStepper::DRIVER, stepXPin, dirXPin}
 };
 StringSpeed lastSpeed;
-double originOffset {10};  // in inches
 
 constexpr int enableMotorPin {8};
 
@@ -43,6 +42,38 @@ constexpr double stepRadius = {stepsPerRotation / (2*PI)};
 // // Parameters of the string set-up (including initial conditions)
 constexpr double stepsPerInch {stepsPerRotation / inchPerRotation};
 
+const double stepsPerSecond {rotationsPerSecond * stepsPerRotation};
+
+constexpr double slowFactor {0.9};
+static_assert(0 < slowFactor && slowFactor <= 1);
+const double gridLimit {slowFactor / sqrt(2) * stepsPerSecond};
+
+GridSpeed speed{gridLimit, gridLimit};
+
+GridSpeed getTrajectory(Position start, Position end) {
+    // Might be abuse of notation unless you consider Position as a vector
+    const Position delta {end - start};
+    // Scale so that the bigger component moves at max grid speed.
+    const double scaleFactor {gridLimit / max(delta.x, delta.y)};
+    return GridSpeed{scaleFactor * delta.x, scaleFactor * delta.y};
+}
+
+
+StringSpeed getSpeed() {
+    // Expects that the speed variable is updated for current trajectory.
+    const Tangential tangential(getLengths());
+    const Position position(TruePosition(Radial(tangential)), originOffset);
+
+    const auto rateFactor = position.x * speed.x + position.y * speed.y;
+
+    const StringSpeed stringSpeed {
+        rateFactor / tangential.left,
+        (rateFactor - width * speed.x) / tangential.right
+    };
+
+    return stringSpeed;
+}
+
 void enable() {
   steppers[1].enableOutputs();
   delay(100);  // Doesn't impact motor stuttering
@@ -61,8 +92,6 @@ Steps inchToSteps(TotalLengths lengths) {
 }
 
 }
-
-const double stepsPerSecond {rotationsPerSecond * stepsPerRotation};
 
 void run(StringSpeed speed) {
   lastSpeed = speed;
@@ -89,10 +118,8 @@ void init(Tangential tangential) {
     stepper.setSpeed(0);
   }
 
+  originOffset = Radial(tangential).findOffset();
   disable();
-
-  const auto radial = Radial(tangential);
-  originOffset = radial.findOffset();
 }
 
 void step(TotalLengths lengths) {
@@ -118,6 +145,10 @@ void go(Steps steps) {
   steppers[1].moveTo(-steps.right);
 }
 
+void setOffset(double offset) {
+  originOffset = offset;
+}
+
 void zero(TotalLengths lengths) {
   auto steps = inchToSteps(lengths);
   steppers[0].setCurrentPosition(steps.left);
@@ -140,14 +171,16 @@ Steps getSteps() {
 }
 
 Position getPosition() {
-  return Position(getLengths(), originOffset);
+  return Position(getRadial(), originOffset);
 }
 
 Radial getRadial() {
-  return Radial(getLengths());
+  return Radial(getTangential());
 }
 
 Tangential getTangential() {
   return Tangential(getLengths());
 }
+
+double originOffset {10};  // in inches
 }

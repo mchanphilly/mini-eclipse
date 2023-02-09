@@ -1,53 +1,55 @@
 #include "Executor.h"
 
-#include "Blocker.h"
 #include "Parser.h"
 #include "Scheduler.h"
 #include "MotorSystem.h"
 
 namespace Executor {
-using namespace Blocker;
+using namespace Lengths;
 
 namespace {
-StringState state;
 
 inline void printPosition() {
-    Serial.println(state.toPosition());
+    Serial.println(MotorSystem::getPosition());
 }
 
 inline void printTangential() {
-    Serial.println(state.toTangential());
+    Serial.println(MotorSystem::getTangential());
 }
 
-void go(Lengths::Position position) {
-    state.go(position);
-    const auto lengths = state.toTotalLengths();
+void go(Position position) {
+    const auto truePosition = TruePosition(position, MotorSystem::originOffset);
+    const Radial radial(truePosition);
+    const Tangential tangential(radial);
+    const TotalLengths lengths(truePosition, radial, tangential); 
     MotorSystem::go(lengths);
 }
 
-void syncMotors(Lengths::Tangential tangential) {
-    const auto lengths = state.toTotalLengths();
-    MotorSystem::zero(lengths);
+TotalLengths syncMotors(Tangential tangential) {
+    const Radial radial(tangential);
+    const TruePosition truePosition(radial);
+    const TotalLengths lengths(truePosition, radial, tangential);
 }
 
 void softZero(Lengths::Tangential tangential) {
-    state.softZero(tangential);
-    syncMotors(tangential);
+    const auto lengths = syncMotors(tangential);
+    MotorSystem::zero(lengths);
 }
 
-void hardZero(Lengths::Tangential tangential) {
-    state.hardZero(tangential);
-    syncMotors(tangential);
-}
+// void hardZero(Lengths::Tangential tangential) {
+//     const auto lengths = syncMotors(tangential);
+//     MotorSystem::zero(lengths);
+//     MotorSystem::setOffset()
+// }
 
 int counter {0};
 const int pace {10000};
 void runMotors() {
     // counter = (counter + 1) % pace;
-    StringSpeed newSpeed = state.getSpeed();
-
+    // StringSpeed newSpeed = MotorSystem::getSpeed();
+    MotorSystem::run();
     // if (counter == 0) {
-        MotorSystem::run(newSpeed);
+        // MotorSystem::run(newSpeed);
     // } else {
     //     MotorSystem::run();
     // }
@@ -77,7 +79,7 @@ void execute(Parser::Command command) {
         break;
 
         case Parser::CommandType::GoInch:
-        MotorSystem::go(TotalLengths(pair));
+        MotorSystem::go(TotalLengths(pair));  // arbitrary length
         break;
 
         case Parser::CommandType::GetStep:
@@ -91,11 +93,12 @@ void execute(Parser::Command command) {
         break;
 
         case Parser::CommandType::SoftZero:
-        softZero(Lengths::Tangential(pair));
+        softZero(Tangential(pair));
         break;
 
         case Parser::CommandType::HardZero:
-        hardZero(Lengths::Tangential(pair));
+        // hardZero(Tangential(pair));
+        Serial.println("Hardzero unavailable");
         break;
 
         case Parser::CommandType::Go:
@@ -127,7 +130,6 @@ void init(Tangential tangential) {
     Scheduler::setZone(startZone);
     Scheduler::setInterval(interval);
 
-    hardZero(tangential);
     MotorSystem::init(tangential);
 }
 
@@ -141,10 +143,6 @@ void run() {
         Serial.print("Scheduled: ");
         execute(command);
     }
-}
-
-const StringState& getState() {
-    return state;
 }
 
 }

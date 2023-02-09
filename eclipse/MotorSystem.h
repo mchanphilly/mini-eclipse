@@ -36,6 +36,8 @@ void go(TotalLengths lengths);
 
 void go(Steps steps);
 
+// void setOffset(double offset);
+
 /**
  * @brief Reset the lengths of the strings from tangent to spool (converts inches to steps)
  * 
@@ -53,6 +55,7 @@ Radial getRadial();
 Tangential getTangential();
 
 extern const double stepsPerSecond;
+extern double originOffset;
 }
 
 #endif

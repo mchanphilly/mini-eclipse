@@ -1,18 +1,16 @@
 #ifndef Executor_h
 #define Executor_h
 
-#include "Blocker.h"
 #include "Lengths.h"
 #include "Parser.h"
 
 namespace Executor {
-    void init(Lengths::Tangential tangential);
 
-    void run();
+void init(Lengths::Tangential tangential);
 
-    void execute(Parser::Command command);
+void run();
 
-    const Blocker::StringState& getState();
+void execute(Parser::Command command);
 }
 
 #endif

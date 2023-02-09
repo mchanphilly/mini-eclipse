@@ -16,10 +16,10 @@ constexpr double inchPerRotation {2.37578};
 constexpr double radius {inchPerRotation / (2*PI)};
 
 struct GridPair : public Printable {
-    double x {0};
-    double y {0};
+    double x;
+    double y;
 
-    GridPair() = default;
+    // GridPair() = default;
 
     GridPair(double pair[2]);
 
@@ -41,9 +41,9 @@ struct StringPair : public Printable {
     size_t printTo(Print& p) const;
 };
 
+// Hierarchy of most abstract to most concrete
 struct Position;
 struct TruePosition;
-
 struct Radial;
 struct Tangential;
 struct TotalLengths;
@@ -51,7 +51,8 @@ struct TotalLengths;
 struct Position : public GridPair {
     using GridPair::GridPair;
 
-    Position(TotalLengths lengths, double offset);
+    Position(TruePosition truePosition, double offset);
+    // Position(TotalLengths lengths, double offset);
 };
 
 inline Position operator-(Position first, Position second) {
@@ -61,7 +62,11 @@ inline Position operator-(Position first, Position second) {
 struct TruePosition : public GridPair {
     using GridPair::GridPair;
 
-    TruePosition(TotalLengths lengths);
+    TruePosition(Position position, double offset);
+    TruePosition(Radial radial);
+    // TruePosition(TotalLengths lengths);
+private:
+    TruePosition(Radial radial, double offset);
 };
 
 struct GridSpeed : public GridPair {
@@ -82,9 +87,10 @@ struct Radial : public StringPair {
      */
     double findOffset() const;
 
+    Radial(TruePosition TruePosition);
     Radial(Tangential tangential);
     // Radial(Position position);
-    Radial(TotalLengths lengths);
+    // Radial(TotalLengths lengths);
 };
 
 struct Tangential : public StringPair {
@@ -117,6 +123,7 @@ struct Angle : public StringPair {
 struct TotalLengths : public StringPair {
     using StringPair::StringPair;
     TotalLengths(Tangential tangential, ArcLength arc);
+    TotalLengths(TruePosition truePosition, Radial radial, Tangential tangential);
 };
 
 struct StringSpeed : public StringPair {
