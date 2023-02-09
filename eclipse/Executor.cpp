@@ -9,19 +9,12 @@ using namespace Lengths;
 
 namespace {
 
-inline void printPosition() {
-    Serial.println(MotorSystem::getPosition());
-}
-
-inline void printTangential() {
-    Serial.println(MotorSystem::getTangential());
-}
-
 void go(Position position) {
     const auto truePosition = TruePosition(position, MotorSystem::originOffset);
     const Radial radial(truePosition);
     const Tangential tangential(radial);
-    const TotalLengths lengths(truePosition, radial, tangential); 
+    const TotalLengths lengths(truePosition, radial, tangential);
+    MotorSystem::setBearing(truePosition);
     MotorSystem::go(lengths);
 }
 
@@ -36,24 +29,6 @@ void softZero(Lengths::Tangential tangential) {
     MotorSystem::zero(lengths);
 }
 
-// void hardZero(Lengths::Tangential tangential) {
-//     const auto lengths = syncMotors(tangential);
-//     MotorSystem::zero(lengths);
-//     MotorSystem::setOffset()
-// }
-
-int counter {0};
-const int pace {10000};
-void runMotors() {
-    // counter = (counter + 1) % pace;
-    // StringSpeed newSpeed = MotorSystem::getSpeed();
-    MotorSystem::run();
-    // if (counter == 0) {
-        // MotorSystem::run(newSpeed);
-    // } else {
-    //     MotorSystem::run();
-    // }
-}
 }
 
 void execute(Parser::Command command) {
@@ -89,7 +64,7 @@ void execute(Parser::Command command) {
 
         case Parser::CommandType::GetInch:
         // Note that this DOES include the arc
-        Serial.println(MotorSystem::getLengths());
+        Serial.println(MotorSystem::getTangential());
         break;
 
         case Parser::CommandType::SoftZero:
@@ -106,7 +81,7 @@ void execute(Parser::Command command) {
         break;
 
         case Parser::CommandType::GetPosition:
-        printPosition();
+        Serial.println(MotorSystem::getPosition());
         break;
 
         case Parser::CommandType::SetTime:
@@ -135,8 +110,7 @@ void init(Tangential tangential) {
 
 void run() {
     Scheduler::run();
-
-    runMotors();
+    MotorSystem::run();
     
     if (Scheduler::ready) {
         auto command = Scheduler::fetch();

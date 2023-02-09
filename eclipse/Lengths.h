@@ -55,9 +55,6 @@ struct Position : public GridPair {
     // Position(TotalLengths lengths, double offset);
 };
 
-inline Position operator-(Position first, Position second) {
-    return Position{second.x - first.x, second.y - first.y};
-}
 
 struct TruePosition : public GridPair {
     using GridPair::GridPair;
@@ -68,6 +65,10 @@ struct TruePosition : public GridPair {
 private:
     TruePosition(Radial radial, double offset);
 };
+
+inline TruePosition operator-(TruePosition first, TruePosition second) {
+    return TruePosition{second.x - first.x, second.y - first.y};
+}
 
 struct GridSpeed : public GridPair {
     using GridPair::GridPair;

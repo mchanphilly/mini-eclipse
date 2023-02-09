@@ -16,7 +16,6 @@ AccelStepper steppers[2] {
     {AccelStepper::DRIVER, stepYPin, dirYPin},
     {AccelStepper::DRIVER, stepXPin, dirXPin}
 };
-StringSpeed lastSpeed;
 
 constexpr int enableMotorPin {8};
 
@@ -48,30 +47,25 @@ constexpr double slowFactor {0.9};
 static_assert(0 < slowFactor && slowFactor <= 1);
 const double gridLimit {slowFactor / sqrt(2) * stepsPerSecond};
 
-GridSpeed speed{gridLimit, gridLimit};
+const GridSpeed defaultBearing{gridLimit, gridLimit};
 
-GridSpeed getTrajectory(Position start, Position end) {
-    // Might be abuse of notation unless you consider Position as a vector
-    const Position delta {end - start};
-    // Scale so that the bigger component moves at max grid speed.
-    const double scaleFactor {gridLimit / max(delta.x, delta.y)};
-    return GridSpeed{scaleFactor * delta.x, scaleFactor * delta.y};
-}
-
+// StringSpeed lastSpeed;
+GridSpeed bearing{gridLimit, gridLimit};
+StringSpeed currentSpeed {stepsPerSecond, stepsPerSecond};
 
 StringSpeed getSpeed() {
     // Expects that the speed variable is updated for current trajectory.
-    const Tangential tangential(getLengths());
-    const Position position(TruePosition(Radial(tangential)), originOffset);
+    // const Tangential tangential(getLengths());
+    // const TruePosition truePosition{TruePosition(Radial(tangential))};
 
-    const auto rateFactor = position.x * speed.x + position.y * speed.y;
+    // const auto rateFactor = truePosition.x * bearing.x + truePosition.y * bearing.y;
 
-    const StringSpeed stringSpeed {
-        rateFactor / tangential.left,
-        (rateFactor - width * speed.x) / tangential.right
-    };
+    // const StringSpeed stringSpeed {
+    //     rateFactor / tangential.left,
+    //     (rateFactor - width * bearing.x) / tangential.right
+    // };
 
-    return stringSpeed;
+    // return stringSpeed;
 }
 
 void enable() {
@@ -82,6 +76,7 @@ void enable() {
 void disable() {
   delay(50);
   steppers[0].disableOutputs();
+  bearing = defaultBearing;  // reset bearing
 }
 
 Steps inchToSteps(TotalLengths lengths) {
@@ -93,10 +88,11 @@ Steps inchToSteps(TotalLengths lengths) {
 
 }
 
-void run(StringSpeed speed) {
-  lastSpeed = speed;
-  steppers[0].setSpeed(speed.left);
-  steppers[1].setSpeed(speed.right);
+void run() {
+  // const auto speed = getSpeed();
+  // Serial.println(speed);
+  steppers[0].setSpeed(currentSpeed.left);
+  steppers[1].setSpeed(currentSpeed.right);
 
   steppers[0].runSpeedToPosition();
   steppers[1].runSpeedToPosition();
@@ -104,10 +100,6 @@ void run(StringSpeed speed) {
   if (!steppers[0].distanceToGo() && !steppers[1].distanceToGo()) {
     disable();
   }
-}
-
-void run() {
-    run(lastSpeed);
 }
 
 void init(Tangential tangential) {
@@ -118,7 +110,11 @@ void init(Tangential tangential) {
     stepper.setSpeed(0);
   }
 
-  originOffset = Radial(tangential).findOffset();
+  const auto radial = Radial(tangential);
+  originOffset = radial.findOffset();
+  const auto truePosition = TruePosition(radial);
+  const TotalLengths lengths = TotalLengths(truePosition, radial, tangential);
+  zero(lengths);
   disable();
 }
 
@@ -134,7 +130,6 @@ void step(Steps steps) {
 }
 
 void go(TotalLengths lengths) {
-  // Converting to steps first
   auto steps = inchToSteps(lengths);
   go(steps);
 }
@@ -145,14 +140,19 @@ void go(Steps steps) {
   steppers[1].moveTo(-steps.right);
 }
 
-void setOffset(double offset) {
-  originOffset = offset;
-}
-
 void zero(TotalLengths lengths) {
   auto steps = inchToSteps(lengths);
   steppers[0].setCurrentPosition(steps.left);
   steppers[1].setCurrentPosition(-steps.right);
+}
+
+// todo consider caching previous TruePosition target
+void setBearing(TruePosition end) {
+  const TruePosition start = TruePosition(Radial(Tangential(getLengths())));
+  const TruePosition delta = end - start;
+  // Scale so that the bigger component moves at max grid speed.
+  const double scaleFactor {gridLimit / max(delta.x, delta.y)};
+  bearing = GridSpeed{scaleFactor * delta.x, scaleFactor * delta.y};
 }
 
 TotalLengths getLengths() {
@@ -171,6 +171,8 @@ Steps getSteps() {
 }
 
 Position getPosition() {
+  Serial.print("OriginOffset");
+  Serial.println(originOffset);
   return Position(getRadial(), originOffset);
 }
 
