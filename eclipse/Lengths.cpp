@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 namespace Lengths {
-
+namespace {
 size_t printToPair(Print& p, double first, double second) {
     size_t size = 0;
     
@@ -14,6 +14,7 @@ size_t printToPair(Print& p, double first, double second) {
     size += p.print(")");
 
     return size;
+}
 }
 
 GridPair::GridPair(double _x, double _y)
@@ -32,12 +33,24 @@ StringPair::StringPair(double pair[2])
     : StringPair{pair[0], pair[1]}
     {}
 
+Steps::Steps(long _left, long _right)
+    : left{_left}, right{_right}
+    {} 
+
+Steps::Steps(double pair[2])
+    : left{lround(pair[0])}, right{lround(pair[1])}
+    {}
+
 size_t GridPair::printTo(Print& p) const {
     return p.print("GridPair: ") + printToPair(p, this->x, this->y);
 }
 
 size_t StringPair::printTo(Print& p) const {
     return p.print("StringPair: ") + printToPair(p, this->left, this->right);
+}
+
+size_t Steps::printTo(Print& p) const {
+    return p.print("Steps: ") + printToPair(p, this->left, this->right);
 }
 
 double Radial::findOffset() const {
@@ -55,6 +68,5 @@ TotalLengths::TotalLengths(Tangential tangential, ArcLength arc) {
     left = tangential.left + arc.left;
     right = tangential.right + arc.right;
 }
-
 
 }

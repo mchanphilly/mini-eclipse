@@ -102,7 +102,16 @@ struct StringSpeed : public StringPair {
     using StringPair::StringPair;
 };
 
-size_t printToPair(Print& p, double first, double second);
+struct Steps : public Printable {
+    long left {0};
+    long right {0};
+
+    Steps() = default;
+    Steps(double pair[2]);
+    Steps(long _left, long _right); 
+
+    size_t printTo(Print& p) const;
+};
 
 }
 

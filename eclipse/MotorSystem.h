@@ -9,21 +9,6 @@
 namespace MotorSystem {
 using namespace Lengths;
 
-enum class Unit {
-  Invalid,
-  Step,
-  Inch
-};
-
-struct Steps : public Printable {
-  long left {0};
-  long right {0};
-
-  inline size_t printTo(Print& p) const {
-    return p.print("Steps: ") + printToPair(p, left, right);
-  }
-};
-
 void run(StringSpeed speed);
 
 void run();
@@ -38,25 +23,24 @@ void init();
  * @param rightNum 
  * @param unit 
  */
-void step(double leftNum, double rightNum, Unit unit);
+void step(TotalLengths lengths);
+
+void step(Steps steps);
 
 /**
  * @brief Command the motors to step to a certain position from
  * the zero position.
  * 
- * @param leftNum 
- * @param rightNum 
- * @param unit 
  */
-void go(double leftNum, double rightNum, Unit unit);
+void go(TotalLengths lengths);
+
+void go(Steps steps);
 
 /**
  * @brief Reset the lengths of the strings from tangent to spool (converts inches to steps)
  * 
- * @param leftLength 
- * @param rightLength 
  */
-void zero(double leftLength, double rightLength);
+void zero(TotalLengths lengths);
 
 TotalLengths getLengths();
 

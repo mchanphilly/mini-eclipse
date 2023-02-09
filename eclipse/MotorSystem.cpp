@@ -53,18 +53,10 @@ void disable() {
   steppers[0].disableOutputs();
 }
 
-Steps inputToSteps(double num1, double num2, Unit unit) {
+Steps inchToSteps(TotalLengths lengths) {
   Steps outSteps;
-  switch (unit) {
-    case Unit::Inch:
-        outSteps.left = lround(stepsPerInch * num1);
-        outSteps.right = lround(stepsPerInch * num2);
-        break;
-    case Unit::Step:
-        outSteps.left = (long)num1;
-        outSteps.right = (long)num2;
-        break;
-  }
+  outSteps.left = lround(stepsPerInch * lengths.left);
+  outSteps.right = lround(stepsPerInch * lengths.right);
   return outSteps;
 }
 
@@ -101,25 +93,31 @@ void init() {
   disable();
 }
 
-void step(double leftNum, double rightNum, Unit unit) {
-  auto steps = inputToSteps(leftNum, rightNum, unit);
+void step(TotalLengths lengths) {
+  auto steps = inchToSteps(lengths);
+  step(steps);
+}
 
+void step(Steps steps) {
   enable();
   steppers[0].move(steps.left);
   steppers[1].move(-steps.right);
 }
 
-void go(double leftNum, double rightNum, Unit unit) {
+void go(TotalLengths lengths) {
   // Converting to steps first
-  auto steps = inputToSteps(leftNum, rightNum, unit);
+  auto steps = inchToSteps(lengths);
+  go(steps);
+}
 
+void go(Steps steps) {
   enable();
   steppers[0].moveTo(steps.left);
   steppers[1].moveTo(-steps.right);
 }
 
-void zero(double leftLength, double rightLength) {
-  auto steps = inputToSteps(leftLength, rightLength, Unit::Inch);
+void zero(TotalLengths lengths) {
+  auto steps = inchToSteps(lengths);
   steppers[0].setCurrentPosition(steps.left);
   steppers[1].setCurrentPosition(-steps.right);
 }
@@ -128,14 +126,14 @@ TotalLengths getLengths() {
   TotalLengths lengths;
   auto steps = getSteps();
   lengths.left = static_cast<double>(steps.left) / stepsPerInch;
-  lengths.right = -static_cast<double>(steps.right) / stepsPerInch;  // Note negative
+  lengths.right = static_cast<double>(steps.right) / stepsPerInch;  // Note negative
   return lengths;
 }
 
 Steps getSteps() {
   Steps steps;
   steps.left = steppers[0].currentPosition();
-  steps.right = steppers[1].currentPosition();
+  steps.right = -steppers[1].currentPosition();
   return steps;
 }
 

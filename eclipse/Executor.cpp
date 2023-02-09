@@ -22,12 +22,12 @@ inline void printTangential() {
 void go(Lengths::Position position) {
     state.go(position);
     const auto lengths = state.toTotalLengths();
-    MotorSystem::go(lengths.left, lengths.right, MotorSystem::Unit::Inch);
+    MotorSystem::go(lengths);
 }
 
 void syncMotors(Lengths::Tangential tangential) {
     const auto lengths = state.toTotalLengths();
-    MotorSystem::zero(lengths.left, lengths.right);
+    MotorSystem::zero(lengths);
 }
 
 void softZero(Lengths::Tangential tangential) {
@@ -61,36 +61,23 @@ void execute(Parser::Command command) {
     double num2 = command.num2;
 
     double pair[2] {num1, num2};
-    double lengths[2];
-
-    // If only this was C++17 and not C++11
-    // using enum Parser::CommandType;
-
-    MotorSystem::Unit unit = MotorSystem::Unit::Invalid;
-    switch (command.type) {
-        case Parser::CommandType::ShiftStep:
-        case Parser::CommandType::GoStep:
-        case Parser::CommandType::GetStep:
-        unit = MotorSystem::Unit::Step;
-        break;
-
-        case Parser::CommandType::ShiftInch:
-        case Parser::CommandType::GoInch:
-        case Parser::CommandType::GetInch:
-        unit = MotorSystem::Unit::Inch;
-        break;
-    }
 
     switch (command.type) {
 
         case Parser::CommandType::ShiftStep:
+        MotorSystem::step(Steps(pair));
+        break;
+
         case Parser::CommandType::ShiftInch:
-        MotorSystem::step(num1, num2, unit);
+        MotorSystem::step(TotalLengths(pair));
         break;
 
         case Parser::CommandType::GoStep:
+        MotorSystem::go(Steps(pair));
+        break;
+
         case Parser::CommandType::GoInch:
-        MotorSystem::go(num1, num2, unit);
+        MotorSystem::go(TotalLengths(pair));
         break;
 
         case Parser::CommandType::GetStep:
