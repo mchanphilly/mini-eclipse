@@ -29,7 +29,7 @@ template<class T>
 inline T getLegs(double hypotenuse1, double hypotenuse2, double altitude) {
     return T(getLeg(hypotenuse1, altitude), getLeg(hypotenuse2, altitude));
 }
-
+// TODO remove when needed
 }
 
 GridSpeed getTrajectory(Position start, Position end) {
@@ -49,8 +49,7 @@ StringState::StringState(Radial _radial)
     {}
 
 StringState::StringState(Tangential _tangential) {
-    const auto radius = MotorSystem::inchRadius;
-    radial = getHypotenuses<Radial>(_tangential.left, _tangential.right, radius);
+    radial = Radial(_tangential);
     originOffset = radial.findOffset();
 }
 
@@ -104,8 +103,7 @@ Radial StringState::toRadial() const {
 }
 
 Tangential StringState::toTangential() const {
-    const auto radius = MotorSystem::inchRadius;
-    return getLegs<Tangential>(radial.left, radial.right, radius);
+    return Tangential(radial);  // See if we can do implicit
 }
 
 Position StringState::toPosition() const {
@@ -131,7 +129,7 @@ TotalLengths StringState::toTotalLengths() const {
     };
 
     // Angle between radial and the radius connected to tangent
-    const double r {MotorSystem::inchRadius};
+    const double r {Lengths::radius};
     const Angle tangentRadial {acos(r/radial.left), acos(r/radial.right)};
     const Angle starter{PI/2, PI/2};
     const Angle offset = starter - (tangentRadial - vertical);

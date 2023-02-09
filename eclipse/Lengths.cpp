@@ -15,6 +15,24 @@ size_t printToPair(Print& p, double first, double second) {
 
     return size;
 }
+
+inline double getHypotenuse(double leg, double altitude) {
+    return sqrt(sq(leg) + sq(altitude));
+};
+
+inline double getLeg(double hypotenuse, double leg) {
+    return sqrt(sq(hypotenuse) - sq(leg));
+}
+
+template<class T>
+inline T getHypotenuses(double leg1, double leg2, double altitude) {
+    return T(getHypotenuse(leg1, altitude), getHypotenuse(leg2, altitude));
+}
+
+template<class T>
+inline T getLegs(double hypotenuse1, double hypotenuse2, double altitude) {
+    return T(getLeg(hypotenuse1, altitude), getLeg(hypotenuse2, altitude));
+}
 }
 
 GridPair::GridPair(double _x, double _y)
@@ -32,6 +50,19 @@ StringPair::StringPair(double _left, double _right)
 StringPair::StringPair(double pair[2])
     : StringPair{pair[0], pair[1]}
     {}
+
+// todo refactor
+Radial::Radial(Tangential tangential) {
+    const auto radial = getHypotenuses<Radial>(tangential.left, tangential.right, radius);
+    this->left = radial.left;
+    this->right = radial.right;
+}
+
+Tangential::Tangential(Radial radial) {
+    const auto tangential = getLegs<Tangential>(radial.left, radial.right, radius);
+    this->left = tangential.left;
+    this->right = tangential.right;
+}
 
 Steps::Steps(long _left, long _right)
     : left{_left}, right{_right}
@@ -63,6 +94,7 @@ double Radial::findOffset() const {
 
     return offset;
 }
+
 
 TotalLengths::TotalLengths(Tangential tangential, ArcLength arc) {
     left = tangential.left + arc.left;

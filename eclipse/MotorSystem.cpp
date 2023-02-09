@@ -40,7 +40,6 @@ constexpr double rotationsPerSecond {rotationsPerMinute / secondsPerMinute};
 constexpr double stepRadius = {stepsPerRotation / (2*PI)};
 
 // // Parameters of the string set-up (including initial conditions)
-constexpr double inchPerRotation {2.37578};
 constexpr double stepsPerInch {stepsPerRotation / inchPerRotation};
 
 void enable() {
@@ -63,7 +62,6 @@ Steps inchToSteps(TotalLengths lengths) {
 }
 
 const double stepsPerSecond {rotationsPerSecond * stepsPerRotation};
-const double inchRadius {stepRadius / stepsPerInch};
 
 void run(StringSpeed speed) {
   lastSpeed = speed;

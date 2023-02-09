@@ -6,12 +6,14 @@
 namespace Lengths {
 
 // All measurements done in inches from the contact point of the string on the spool.
-static constexpr double minHeight {6};  // Limits max torque on spool; minimum permissible vertical displacement
-static constexpr double width {41.232};  // Distance at motor level
+constexpr double minHeight {6};  // Limits max torque on spool; minimum permissible vertical displacement
+constexpr double width {41.232};  // Distance at motor level
 
 // Currently unused
-static constexpr double height {55};  // Biggest permissible vertical displacement (less than longest string permitted)
+constexpr double height {55};  // Biggest permissible vertical displacement (less than longest string permitted)
 
+constexpr double inchPerRotation {2.37578};
+constexpr double radius {inchPerRotation / (2*PI)};
 
 struct GridPair : public Printable {
     double x {0};
@@ -26,8 +28,32 @@ struct GridPair : public Printable {
     size_t printTo(Print& p) const;
 };
 
+struct StringPair : public Printable {
+    double left {0};
+    double right {0};
+
+    StringPair() = default;
+
+    // StringPair(StringPair& other) = default;
+
+    StringPair(double pair[2]);
+
+    StringPair(double _left, double _right);
+
+    size_t printTo(Print& p) const;
+};
+
+struct Position;
+struct TruePosition;
+
+struct Radial;
+struct Tangential;
+struct TotalLengths;
+
 struct Position : public GridPair {
     using GridPair::GridPair;
+
+    // double offset {10};  // be sure to reassign
 };
 
 inline Position operator-(Position first, Position second) {
@@ -40,19 +66,6 @@ struct TruePosition : public GridPair {
 
 struct GridSpeed : public GridPair {
     using GridPair::GridPair;
-};
-
-struct StringPair : public Printable {
-    double left {0};
-    double right {0};
-
-    StringPair() = default;
-
-    StringPair(double pair[2]);
-
-    StringPair(double _left, double _right);
-
-    size_t printTo(Print& p) const;
 };
 
 /**
@@ -68,10 +81,14 @@ struct Radial : public StringPair {
      * @return double 
      */
     double findOffset() const;
+
+    Radial(Tangential tangential);
 };
 
 struct Tangential : public StringPair {
     using StringPair::StringPair;
+
+    Tangential(Radial radial);
 };
 
 struct ArcLength : public StringPair {

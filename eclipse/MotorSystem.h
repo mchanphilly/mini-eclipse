@@ -47,8 +47,6 @@ TotalLengths getLengths();
 Steps getSteps();
 
 extern const double stepsPerSecond;
-extern const double inchRadius;
-
 }
 
 #endif
