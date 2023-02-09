@@ -52,17 +52,13 @@ StringPair::StringPair(double pair[2])
     {}
 
 // todo refactor
-Radial::Radial(Tangential tangential) {
-    const auto radial = getHypotenuses<Radial>(tangential.left, tangential.right, radius);
-    this->left = radial.left;
-    this->right = radial.right;
-}
+Radial::Radial(Tangential tangential)
+    : Radial(getHypotenuses<Radial>(tangential.left, tangential.right, radius))
+    {}
 
-Tangential::Tangential(Radial radial) {
-    const auto tangential = getLegs<Tangential>(radial.left, radial.right, radius);
-    this->left = tangential.left;
-    this->right = tangential.right;
-}
+Tangential::Tangential(Radial radial)
+    : Tangential(getLegs<Tangential>(radial.left, radial.right, radius))
+    {}
 
 Steps::Steps(long _left, long _right)
     : left{_left}, right{_right}

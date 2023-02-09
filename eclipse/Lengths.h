@@ -34,8 +34,6 @@ struct StringPair : public Printable {
 
     StringPair() = default;
 
-    // StringPair(StringPair& other) = default;
-
     StringPair(double pair[2]);
 
     StringPair(double _left, double _right);
@@ -83,12 +81,14 @@ struct Radial : public StringPair {
     double findOffset() const;
 
     Radial(Tangential tangential);
+    // Radial(Position position);
 };
 
 struct Tangential : public StringPair {
     using StringPair::StringPair;
 
     Tangential(Radial radial);
+    // Tangential(Position position);
 };
 
 struct ArcLength : public StringPair {
