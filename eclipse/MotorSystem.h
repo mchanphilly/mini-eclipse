@@ -9,8 +9,6 @@
 namespace MotorSystem {
 using namespace Lengths;
 
-void run(StringSpeed speed);
-
 void run();
 
 void init(Tangential tangential);

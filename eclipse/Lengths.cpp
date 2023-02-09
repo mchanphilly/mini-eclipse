@@ -135,8 +135,7 @@ double Radial::findOffset() const {
                         (semiPerimeter - left) *
                         (semiPerimeter - right) *
                         (semiPerimeter - width));
-    const double offset {2 * area / width};
-
+    const double offset = 2 * area / width;
     return offset;
 }
 

@@ -47,7 +47,10 @@ constexpr double slowFactor {0.9};
 static_assert(0 < slowFactor && slowFactor <= 1);
 const double gridLimit {slowFactor / sqrt(2) * stepsPerSecond};
 
+const StringSpeed defaultSpeed{stepsPerSecond, stepsPerSecond};
 const GridSpeed defaultBearing{gridLimit, gridLimit};
+constexpr unsigned long speedPace{1000};
+unsigned long currentTime{0};
 
 // StringSpeed lastSpeed;
 GridSpeed bearing{gridLimit, gridLimit};
@@ -55,17 +58,17 @@ StringSpeed currentSpeed {stepsPerSecond, stepsPerSecond};
 
 StringSpeed getSpeed() {
     // Expects that the speed variable is updated for current trajectory.
-    // const Tangential tangential(getLengths());
-    // const TruePosition truePosition{TruePosition(Radial(tangential))};
+    const Tangential tangential = Tangential(getLengths());
+    const TruePosition truePosition = TruePosition(Radial(tangential));
 
-    // const auto rateFactor = truePosition.x * bearing.x + truePosition.y * bearing.y;
+    const auto rateFactor = truePosition.x * bearing.x + truePosition.y * bearing.y;
 
-    // const StringSpeed stringSpeed {
-    //     rateFactor / tangential.left,
-    //     (rateFactor - width * bearing.x) / tangential.right
-    // };
-
-    // return stringSpeed;
+    const StringSpeed stringSpeed {
+        rateFactor / tangential.left,
+        (rateFactor - width * bearing.x) / tangential.right
+    };
+    // Serial.println(stringSpeed);
+    return stringSpeed;
 }
 
 void enable() {
@@ -77,6 +80,7 @@ void disable() {
   delay(50);
   steppers[0].disableOutputs();
   bearing = defaultBearing;  // reset bearing
+  currentSpeed = defaultSpeed;
 }
 
 Steps inchToSteps(TotalLengths lengths) {
@@ -86,18 +90,26 @@ Steps inchToSteps(TotalLengths lengths) {
   return outSteps;
 }
 
+inline bool stillMoving() {
+  return steppers[0].distanceToGo() || steppers[1].distanceToGo();
+}
+
 }
 
 void run() {
-  // const auto speed = getSpeed();
-  // Serial.println(speed);
+  if (millis() - currentTime > 100) {
+    currentSpeed = getSpeed();
+    Serial.println(currentSpeed);
+    currentTime = millis();
+  }
+
   steppers[0].setSpeed(currentSpeed.left);
   steppers[1].setSpeed(currentSpeed.right);
 
   steppers[0].runSpeedToPosition();
   steppers[1].runSpeedToPosition();
   
-  if (!steppers[0].distanceToGo() && !steppers[1].distanceToGo()) {
+  if (!stillMoving()) {
     disable();
   }
 }
@@ -127,6 +139,7 @@ void step(Steps steps) {
   enable();
   steppers[0].move(steps.left);
   steppers[1].move(-steps.right);
+  // currentSpeed = maxSpeed;
 }
 
 void go(TotalLengths lengths) {
@@ -138,6 +151,7 @@ void go(Steps steps) {
   enable();
   steppers[0].moveTo(steps.left);
   steppers[1].moveTo(-steps.right);
+  // currentSpeed = getSpeed();
 }
 
 void zero(TotalLengths lengths) {
@@ -152,7 +166,7 @@ void setBearing(TruePosition end) {
   const TruePosition delta = end - start;
   // Scale so that the bigger component moves at max grid speed.
   const double scaleFactor {gridLimit / max(delta.x, delta.y)};
-  bearing = GridSpeed{scaleFactor * delta.x, scaleFactor * delta.y};
+  bearing = GridSpeed(scaleFactor * delta.x, scaleFactor * delta.y);
 }
 
 TotalLengths getLengths() {
@@ -171,9 +185,11 @@ Steps getSteps() {
 }
 
 Position getPosition() {
-  Serial.print("OriginOffset");
-  Serial.println(originOffset);
-  return Position(getRadial(), originOffset);
+  Serial.println("Position???");
+  Serial.println(getRadial());
+  Serial.println(TruePosition(getRadial()));
+  // Serial.println(Position(TruePosition(getRadial()), originOffset));
+  return Position(TruePosition(getRadial()), originOffset);
 }
 
 Radial getRadial() {
