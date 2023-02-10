@@ -44,6 +44,8 @@ void zero(TotalLengths lengths);
 
 void setBearing(TruePosition end);
 
+bool stillMoving();
+
 TotalLengths getLengths();
 
 Steps getSteps();

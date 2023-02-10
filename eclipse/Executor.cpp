@@ -9,13 +9,38 @@ using namespace Lengths;
 
 namespace {
 
-void go(Position position) {
-    const auto truePosition = TruePosition(position, MotorSystem::originOffset);
+constexpr double goSteps {20};
+int goIteration = goSteps;
+TruePosition current{0, 0};
+TruePosition step{0, 0};
+
+void go(TruePosition truePosition) {
     const Radial radial(truePosition);
     const Tangential tangential(radial);
     const TotalLengths lengths(truePosition, radial, tangential);
     MotorSystem::setBearing(truePosition);
     MotorSystem::go(lengths);
+}
+
+void go(Position position) {
+    const auto truePosition = TruePosition(position, MotorSystem::originOffset);
+    go(truePosition);
+}
+
+void interpolateGo(Position position) {
+    current = MotorSystem::getTruePosition();
+    const auto destination = TruePosition(position, MotorSystem::originOffset);
+    const auto delta = destination - current;
+    step = TruePosition(delta.x / goSteps, delta.y / goSteps);
+    goIteration = 0;
+}
+
+void checkGo() {
+    if (!MotorSystem::stillMoving() && goIteration < goSteps) {
+        current = current + step;
+        goIteration++;
+        go(current);
+    }
 }
 
 TotalLengths syncMotors(Tangential tangential) {
@@ -111,6 +136,7 @@ void init(Tangential tangential) {
 void run() {
     Scheduler::run();
     MotorSystem::run();
+    checkGo();
     
     if (Scheduler::ready) {
         auto command = Scheduler::fetch();

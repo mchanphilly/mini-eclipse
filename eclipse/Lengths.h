@@ -55,7 +55,6 @@ struct Position : public GridPair {
     // Position(TotalLengths lengths, double offset);
 };
 
-
 struct TruePosition : public GridPair {
     using GridPair::GridPair;
 
@@ -68,6 +67,10 @@ private:
 
 inline TruePosition operator-(TruePosition first, TruePosition second) {
     return TruePosition{second.x - first.x, second.y - first.y};
+}
+
+inline TruePosition operator+(TruePosition first, TruePosition second) {
+    return TruePosition{second.x + first.x, second.y + first.y};
 }
 
 struct GridSpeed : public GridPair {

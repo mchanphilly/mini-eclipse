@@ -70,10 +70,6 @@ Steps inchToSteps(TotalLengths lengths) {
   return outSteps;
 }
 
-inline bool stillMoving() {
-  return steppers[0].distanceToGo() || steppers[1].distanceToGo();
-}
-
 GridSpeed normalizeSpeed(TruePosition delta) {
   const auto greater = static_cast<double>(max(delta.x, delta.y));
   const auto getComponent = [greater](double num) {
@@ -102,6 +98,11 @@ StringSpeed speedFromBearing() {
   return out;
 }
 
+}
+
+bool stillMoving() {
+  bool active = steppers[0].distanceToGo() || steppers[1].distanceToGo();
+  return active;
 }
 
 void run() {
