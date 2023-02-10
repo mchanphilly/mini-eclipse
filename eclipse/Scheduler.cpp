@@ -71,8 +71,8 @@ Parser::Command fetch() {
      * the interval from when we fetch.
      */
     const auto now = Time::getNow();
-    const auto currentCommand = Tasks::printTime(now);
-    // const auto currentCommand = Tasks::makeSquare();
+    // const auto currentCommand = Tasks::printTime(now);
+    const auto currentCommand = Tasks::makeSquare();
     if (ready) {
         target = now + interval;
         return currentCommand;

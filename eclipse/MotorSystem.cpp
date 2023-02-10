@@ -29,7 +29,7 @@ constexpr double maxRotationsPerMinute {500};
 constexpr double maxRotationsPerSecond {maxRotationsPerMinute / secondsPerMinute};
 constexpr double maxStepsPerSecond {maxRotationsPerSecond * stepsPerRotation};
 
-constexpr double rotationsPerMinute {80};
+constexpr double rotationsPerMinute {300};
 static_assert(rotationsPerMinute <= maxRotationsPerMinute);
 constexpr double rotationsPerSecond {rotationsPerMinute / secondsPerMinute};
 
@@ -41,7 +41,7 @@ constexpr double stepRadius = {stepsPerRotation / (2*PI)};
 // // Parameters of the string set-up (including initial conditions)
 constexpr double stepsPerInch {stepsPerRotation / inchPerRotation};
 
-constexpr double safetyFactor = 1.2;
+constexpr double safetyFactor = 1.1;
 constexpr double safeSteps = stepsPerInch * width * safetyFactor;
 
 const double stepsPerSecond {rotationsPerSecond * stepsPerRotation};
