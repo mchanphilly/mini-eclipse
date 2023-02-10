@@ -9,6 +9,7 @@ using namespace Lengths;
 
 namespace {
 
+bool usingScheduled = false;
 constexpr double goSteps {20};
 int goIteration = goSteps;
 TruePosition current{0, 0};
@@ -113,6 +114,18 @@ void execute(Parser::Command command) {
         Scheduler::setTime(command.data);
         break;
 
+        case Parser::CommandType::Stop:
+        MotorSystem::step(TotalLengths(0, 0));
+        break;
+
+        case Parser::CommandType::Start:
+        usingScheduled = true;
+        break;
+
+        case Parser::CommandType::Pause:
+        usingScheduled = false;
+        break;
+
         default:
         Serial.println("Bad command");
         break;
@@ -138,7 +151,7 @@ void run() {
     MotorSystem::run();
     checkGo();
     
-    if (Scheduler::ready) {
+    if (Scheduler::ready && usingScheduled) {
         auto command = Scheduler::fetch();
         Serial.print("Scheduled: ");
         execute(command);

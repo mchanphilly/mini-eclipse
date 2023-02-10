@@ -41,6 +41,9 @@ constexpr double stepRadius = {stepsPerRotation / (2*PI)};
 // // Parameters of the string set-up (including initial conditions)
 constexpr double stepsPerInch {stepsPerRotation / inchPerRotation};
 
+constexpr double safetyFactor = 1.2;
+constexpr double safeSteps = stepsPerInch * width * safetyFactor;
+
 const double stepsPerSecond {rotationsPerSecond * stepsPerRotation};
 
 constexpr double slowFactor {0.9};
@@ -146,7 +149,11 @@ void step(Steps steps) {
 
 void go(TotalLengths lengths) {
   auto steps = inchToSteps(lengths);
-  go(steps);
+  if (steps.left + steps.right < safeSteps) {
+    Serial.println("Step failed: too close to danger length");
+  } else {
+    go(steps);
+  }
 }
 
 void go(Steps steps) {

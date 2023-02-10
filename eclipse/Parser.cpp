@@ -24,6 +24,10 @@ namespace {
 
         parseCase("settime", SetTime);
 
+        parseCase("stop", Stop);
+        parseCase("start", Start);
+        parseCase("pause", Pause);
+
         #undef parseCase
 
         return CommandType::Invalid;

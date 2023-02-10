@@ -9,6 +9,10 @@ enum class CommandType {
         Invalid,
         Test,  // test [testNumber] (executes a test in Test) [UNUSED]
         
+        Stop, // stop whatever motion
+        Start,  // begin checking scheduled tasks
+        Pause,  // pause scheduled tasks
+
         SetTime,  // read the string data
 
         GetStep,  // getstep (gets steps from the zero)
