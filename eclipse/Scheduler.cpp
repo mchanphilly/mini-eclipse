@@ -8,11 +8,30 @@ Time interval {Time::fromMinutes(0.02)};
 Time target {Time(0)};
 
 namespace Tasks {
+    int clock = 0;  // For cycles
+
     Parser::Command printTime(Time time) {
         Serial.print(time.unixTime);
         Serial.print(": ");
         Serial.println(time);
         return Parser::empty;
+    }
+
+    Parser::Command makeSquare() {
+        constexpr int steps = 4;
+        auto command = Parser::empty;
+        command.type = Parser::CommandType::Go;
+        constexpr double length = 30;
+
+        switch (clock) {
+            case 0: command.num1 = length; break;
+            case 1: command.num1 = length; command.num2 = length; break;
+            case 2: command.num2 = length; break;
+            case 3: break;
+        }
+
+        clock = (clock + 1) % 4;
+        return command;
     }
 }
 }
@@ -53,6 +72,7 @@ Parser::Command fetch() {
      */
     const auto now = Time::getNow();
     const auto currentCommand = Tasks::printTime(now);
+    // const auto currentCommand = Tasks::makeSquare();
     if (ready) {
         target = now + interval;
         return currentCommand;

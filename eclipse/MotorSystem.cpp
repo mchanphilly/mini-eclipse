@@ -29,7 +29,7 @@ constexpr double maxRotationsPerMinute {500};
 constexpr double maxRotationsPerSecond {maxRotationsPerMinute / secondsPerMinute};
 constexpr double maxStepsPerSecond {maxRotationsPerSecond * stepsPerRotation};
 
-constexpr double rotationsPerMinute {100};
+constexpr double rotationsPerMinute {80};
 static_assert(rotationsPerMinute <= maxRotationsPerMinute);
 constexpr double rotationsPerSecond {rotationsPerMinute / secondsPerMinute};
 
