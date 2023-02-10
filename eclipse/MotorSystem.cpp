@@ -29,7 +29,7 @@ constexpr double maxRotationsPerMinute {500};
 constexpr double maxRotationsPerSecond {maxRotationsPerMinute / secondsPerMinute};
 constexpr double maxStepsPerSecond {maxRotationsPerSecond * stepsPerRotation};
 
-constexpr double rotationsPerMinute {120};
+constexpr double rotationsPerMinute {100};
 static_assert(rotationsPerMinute <= maxRotationsPerMinute);
 constexpr double rotationsPerSecond {rotationsPerMinute / secondsPerMinute};
 
@@ -49,6 +49,8 @@ const double gridLimit {slowFactor / sqrt(2) * stepsPerSecond};
 
 const StringSpeed defaultStringSpeed {stepsPerSecond, stepsPerSecond};
 StringSpeed currentSpeed {defaultStringSpeed};
+
+GridSpeed bearing {gridLimit, gridLimit};
 
 void enable() {
   steppers[1].enableOutputs();
@@ -72,12 +74,32 @@ inline bool stillMoving() {
   return steppers[0].distanceToGo() || steppers[1].distanceToGo();
 }
 
+GridSpeed normalizeSpeed(TruePosition delta) {
+  const auto greater = static_cast<double>(max(delta.x, delta.y));
+  const auto getComponent = [greater](double num) {
+    return (static_cast<double>(num) / greater) * gridLimit;
+  };
+  
+  const auto out = GridSpeed(getComponent(delta.x), getComponent(delta.y));
+  return out;
+}
+
 StringSpeed normalizeSpeed(Steps steps) {
   const auto greater = static_cast<long double>(max(steps.left, steps.right));
   const auto getComponent = [greater](long num) {
     return static_cast<double>((static_cast<long double>(num) / greater) * stepsPerSecond);
   };
   return StringSpeed(getComponent(steps.left), getComponent(steps.right));
+}
+
+StringSpeed speedFromBearing() {
+  const auto truePosition = getTruePosition();
+  const auto factor = truePosition.x * bearing.x + truePosition.y * bearing.y;
+  const auto tangential = getTangential();
+  const auto out = StringSpeed(factor/tangential.left, -(factor - width*bearing.x)/tangential.right);
+  Serial.print("Speed from bearing: ");
+  Serial.println(out);
+  return out;
 }
 
 }
@@ -139,6 +161,12 @@ void zero(TotalLengths lengths) {
   steppers[1].setCurrentPosition(-steps.right);
 }
 
+void setBearing(TruePosition end) {
+  const auto start = getTruePosition();
+  const auto delta = end - start;
+  bearing = normalizeSpeed(delta);
+}
+
 TotalLengths getLengths() {
   TotalLengths lengths;
   auto steps = getSteps();
@@ -154,17 +182,6 @@ Steps getSteps() {
   return steps;
 }
 
-Position getPosition() {
-  return Position(TruePosition(getRadial()), originOffset);
-}
-
-Radial getRadial() {
-  return Radial(getTangential());
-}
-
-Tangential getTangential() {
-  return Tangential(getLengths());
-}
 
 double originOffset {10};  // in inches
 }

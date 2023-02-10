@@ -48,14 +48,25 @@ TotalLengths getLengths();
 
 Steps getSteps();
 
-Position getPosition();
-
-Radial getRadial();
-
-Tangential getTangential();
-
 extern const double stepsPerSecond;
 extern double originOffset;
+
+inline Tangential getTangential() {
+  return Tangential(getLengths());
+}
+
+inline Radial getRadial() {
+  return Radial(getTangential());
+}
+
+inline TruePosition getTruePosition() {
+  return TruePosition(getRadial());
+}
+
+inline Position getPosition() {
+  return Position(getTruePosition(), originOffset);
+}
+
 }
 
 #endif
