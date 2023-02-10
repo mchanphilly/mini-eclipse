@@ -14,7 +14,6 @@ void go(Position position) {
     const Radial radial(truePosition);
     const Tangential tangential(radial);
     const TotalLengths lengths(truePosition, radial, tangential);
-    MotorSystem::setBearing(truePosition);
     MotorSystem::go(lengths);
 }
 

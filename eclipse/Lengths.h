@@ -142,6 +142,10 @@ struct Steps : public Printable {
     size_t printTo(Print& p) const;
 };
 
+inline Steps operator-(Steps first, Steps second) {
+    return Steps(first.left - second.left, first.right - second.right);
+}
+
 }
 
 #endif
